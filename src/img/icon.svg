@@ -1,0 +1,20 @@
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+
+ <g>
+  <title>background</title>
+  <rect fill="none" id="canvas_background" height="402" width="582" y="-1" x="-1"/>
+ </g>
+ <g>
+  <title>Layer 1</title>
+  <rect fill="#ed6f62" y="59.527269" x="67.851507" width="344.2" id="XMLID_5_" height="50" class="st0"/>
+  <rect stroke="null" fill="#7dbae7" y="118.057575" x="67.85151" width="418.96363" id="XMLID_4_" height="50" class="st1"/>
+  <rect stroke="null" fill="#ffce6c" y="176.709108" x="67.851511" width="295.100014" id="XMLID_1_" height="50" class="st3"/>
+  <rect stroke="null" fill="#ed6f62" y="288.375733" x="67.851507" width="192.727286" id="svg_2" height="50" class="st0"/>
+  <rect stroke="null" fill="#7dbae7" y="348.457555" x="67.851509" width="235.884859" id="svg_3" height="50" class="st1"/>
+  <rect stroke="null" fill="#ffce6c" y="407.109087" x="67.851511" width="330.009107" id="svg_4" height="50" class="st3"/>
+  <line stroke-linecap="null" stroke-linejoin="null" id="svg_5" y2="471.272696" x2="60.896989" y1="24.436373" x1="57.018201" fill-opacity="null" stroke-opacity="null" stroke-width="null" stroke="null" fill="none"/>
+  <rect id="svg_7" height="456.145412" width="6.20606" y="32.193948" x="55.466686" stroke-opacity="null" stroke-width="null" stroke="null" fill="#7f7f7f"/>
+  <ellipse ry="15.127271" rx="15.127271" id="svg_10" cy="144.678787" cx="28.703051" stroke-opacity="null" stroke-width="null" stroke="null" fill="#7f7f7f"/>
+  <ellipse ry="15.127271" rx="15.127271" id="svg_13" cy="373.527252" cx="29.478809" stroke-opacity="null" stroke-width="null" stroke="null" fill="#7f7f7f"/>
+ </g>
+</svg>

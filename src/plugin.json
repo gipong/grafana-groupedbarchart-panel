@@ -1,0 +1,27 @@
+{
+  "type": "panel",
+  "name": "Grouped Bar Chart",
+  "id": "grafana-groupedbarchart-panel",
+
+  "info": {
+    "description": "Grouped bar chart panel for grafana",
+    "author": {
+      "name": "gipong",
+      "url": ""
+    },
+    "keywords": ["groupedBarChart", "panel"],
+    "logos": {
+      "small": "src/img/groupedBarChart_logo_small.png",
+      "large": "src/img/groupedBarChart_logo_large.png"
+    },
+    "links": [],
+    "screenshots": [],
+    "version": "1.0.0",
+    "updated": "2017-12-23"
+  },
+
+  "dependencies": {
+    "grafanaVersion": "4.6",
+    "plugins": [ ]
+  }
+}
