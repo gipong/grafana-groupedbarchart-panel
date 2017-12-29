@@ -257,16 +257,6 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 this.tips = d3.select(this.element).append('div')
                     .attr('class', 'toolTip');
             }
-
-            setData(newData) {
-                this.data = newData;
-                this.draw();
-            }
-
-            setColor(c) {
-                this.color = c;
-                this.draw();
-            }
         }
 
         function onRender() {
@@ -288,9 +278,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
 
             ctrl.panel.colorSet = [];
             Chart.options.forEach(d=> {
-                //if(!ctrl.panel.colorSet.filter(cs=>cs.text == d).length) {
-                    ctrl.panel.colorSet.push({text: d, color: Chart.color(d)});
-                //}
+                ctrl.panel.colorSet.push({text: d, color: Chart.color(d)});
             });
         }
 
