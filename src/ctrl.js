@@ -59,6 +59,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
     }
 
     updateColorSet() {
+        this.panel.colorSch = [];
         this.panel.colorSet.forEach(d=>this.panel.colorSch.push(d.color));
         this.render();
     }
@@ -287,7 +288,9 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
 
             ctrl.panel.colorSet = [];
             Chart.options.forEach(d=> {
-                ctrl.panel.colorSet.push({text: d, color: Chart.color(d)});
+                //if(!ctrl.panel.colorSet.filter(cs=>cs.text == d).length) {
+                    ctrl.panel.colorSet.push({text: d, color: Chart.color(d)});
+                //}
             });
         }
 

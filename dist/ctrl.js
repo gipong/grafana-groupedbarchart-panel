@@ -131,6 +131,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                     value: function updateColorSet() {
                         var _this2 = this;
 
+                        this.panel.colorSch = [];
                         this.panel.colorSet.forEach(function (d) {
                             return _this2.panel.colorSch.push(d.color);
                         });
@@ -367,7 +368,9 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
 
                             ctrl.panel.colorSet = [];
                             Chart.options.forEach(function (d) {
+                                //if(!ctrl.panel.colorSet.filter(cs=>cs.text == d).length) {
                                 ctrl.panel.colorSet.push({ text: d, color: Chart.color(d) });
+                                //}
                             });
                         }
 
