@@ -23,7 +23,9 @@ const panelDefaults = {
     strokeWidth: 1,
     fontSize: '80%',
     width: 800,
-    height: 400
+    height: 400,
+    colorSet: [],
+    colorSch: []
 };
 
 export class GroupedBarChartCtrl extends MetricsPanelCtrl {
@@ -44,7 +46,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
 
     onInitEditMode() {
         this.addEditorTab('Options', 'public/plugins/grafana-groupedbarchart-panel/partials/editor.html', 2);
-        this.unitFormats = kbn.getUnitFormats();
+        this.addEditorTab('Colors', 'public/plugins/grafana-groupedbarchart-panel/partials/colors.html', 3);
     }
 
     setUnitFormat(subItem) {
@@ -53,13 +55,11 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
     }
 
     onDataError() {
-        this.series = [];
         this.render();
     }
 
-    changeSeriesColor(series, color) {
-        series.color = color;
-        this.panel.aliasColors[series.alias] = series.color;
+    updateColorSet() {
+        this.panel.colorSet.forEach(d=>this.panel.colorSch.push(d.color));
         this.render();
     }
 
@@ -76,7 +76,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
             e.label = i;
             res.push(e);
         });
-        this.data = res.sort((a, b)=>{return (a.label>b.label)?1:((b.label>a.label)?-1:0)});
+        this.data = res.sort((a, b)=>{return (a.label>b.label)?-1:((b.label>a.label)?1:0)});
         this.render();
     }
 
@@ -98,7 +98,6 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 this.height = opts.height;
                 this.showLegend = opts.legend;
                 this.element = elem.find(opts.element)[0];
-                console.log(this.data);
                 this.options = d3.keys(this.data[0]).filter(function(key) { return key !== 'label'; });
                 this.avgList = {};
                 this.options.forEach(d=>{this.avgList[d] = 0});
@@ -112,6 +111,14 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 this.options.forEach(d=>{
                     this.avgList[d] /= this.data.length;
                 });
+                if(opts.color.length == 0) {
+                    this.color = d3.scale.ordinal()
+                        .range(d3.scale.category20().range());
+                } else {
+                    this.color = d3.scale.ordinal()
+                        .range(opts.color);
+                }
+
                 this.draw();
             }
 
@@ -138,8 +145,6 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 this.x = d3.scale.linear()
                     .range([0, this.width]);
 
-                this.color = d3.scale.ordinal()
-                    .range(d3.scale.category20().range());
             }
 
             addAxes() {
@@ -256,9 +261,15 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 this.data = newData;
                 this.draw();
             }
+
+            setColor(c) {
+                this.color = c;
+                this.draw();
+            }
         }
 
         function onRender() {
+            if(!ctrl.data) return;
             let sample = [
                 {label:"Machine001", "Off":20, "Down":10, "Run": 50, "Idle":20},
                 {label:"Machine002", "Off":15, "Down":30, "Run":40, "Idle":15}
@@ -270,7 +281,13 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 element: '#chart',
                 width: ctrl.panel.width,
                 height: ctrl.panel.height,
-                legend: ctrl.panel.legend.show
+                legend: ctrl.panel.legend.show,
+                color: ctrl.panel.colorSch
+            });
+
+            ctrl.panel.colorSet = [];
+            Chart.options.forEach(d=> {
+                ctrl.panel.colorSet.push({text: d, color: Chart.color(d)});
             });
         }
 

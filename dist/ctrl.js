@@ -83,7 +83,9 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                 strokeWidth: 1,
                 fontSize: '80%',
                 width: 800,
-                height: 400
+                height: 400,
+                colorSet: [],
+                colorSch: []
             };
 
             _export('GroupedBarChartCtrl', GroupedBarChartCtrl = function (_MetricsPanelCtrl) {
@@ -111,7 +113,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                     key: 'onInitEditMode',
                     value: function onInitEditMode() {
                         this.addEditorTab('Options', 'public/plugins/grafana-groupedbarchart-panel/partials/editor.html', 2);
-                        this.unitFormats = kbn.getUnitFormats();
+                        this.addEditorTab('Colors', 'public/plugins/grafana-groupedbarchart-panel/partials/colors.html', 3);
                     }
                 }, {
                     key: 'setUnitFormat',
@@ -122,14 +124,16 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                 }, {
                     key: 'onDataError',
                     value: function onDataError() {
-                        this.series = [];
                         this.render();
                     }
                 }, {
-                    key: 'changeSeriesColor',
-                    value: function changeSeriesColor(series, color) {
-                        series.color = color;
-                        this.panel.aliasColors[series.alias] = series.color;
+                    key: 'updateColorSet',
+                    value: function updateColorSet() {
+                        var _this2 = this;
+
+                        this.panel.colorSet.forEach(function (d) {
+                            return _this2.panel.colorSch.push(d.color);
+                        });
                         this.render();
                     }
                 }, {
@@ -158,7 +162,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                             res.push(e);
                         });
                         this.data = res.sort(function (a, b) {
-                            return a.label > b.label ? 1 : b.label > a.label ? -1 : 0;
+                            return a.label > b.label ? -1 : b.label > a.label ? 1 : 0;
                         });
                         this.render();
                     }
@@ -177,7 +181,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                     value: function link(scope, elem, attrs, ctrl) {
                         var groupedBarChart = function () {
                             function groupedBarChart(opts) {
-                                var _this2 = this;
+                                var _this3 = this;
 
                                 _classCallCheck(this, groupedBarChart);
 
@@ -187,26 +191,31 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                 this.height = opts.height;
                                 this.showLegend = opts.legend;
                                 this.element = elem.find(opts.element)[0];
-                                console.log(this.data);
                                 this.options = d3.keys(this.data[0]).filter(function (key) {
                                     return key !== 'label';
                                 });
                                 this.avgList = {};
                                 this.options.forEach(function (d) {
-                                    _this2.avgList[d] = 0;
+                                    _this3.avgList[d] = 0;
                                 });
                                 this.options = this.options.filter(function (d) {
                                     return d !== 'valores';
                                 });
                                 this.data.forEach(function (d) {
-                                    d.valores = _this2.options.map(function (name) {
-                                        _this2.avgList[name] = _this2.avgList[name] + d[name];
+                                    d.valores = _this3.options.map(function (name) {
+                                        _this3.avgList[name] = _this3.avgList[name] + d[name];
                                         return { name: name, value: +d[name] };
                                     });
                                 });
                                 this.options.forEach(function (d) {
-                                    _this2.avgList[d] /= _this2.data.length;
+                                    _this3.avgList[d] /= _this3.data.length;
                                 });
+                                if (opts.color.length == 0) {
+                                    this.color = d3.scale.ordinal().range(d3.scale.category20().range());
+                                } else {
+                                    this.color = d3.scale.ordinal().range(opts.color);
+                                }
+
                                 this.draw();
                             }
 
@@ -231,8 +240,6 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                     this.y1 = d3.scale.ordinal();
 
                                     this.x = d3.scale.linear().range([0, this.width]);
-
-                                    this.color = d3.scale.ordinal().range(d3.scale.category20().range());
                                 }
                             }, {
                                 key: 'addAxes',
@@ -258,14 +265,14 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                             }, {
                                 key: 'addBar',
                                 value: function addBar() {
-                                    var _this3 = this;
+                                    var _this4 = this;
 
                                     this.options.forEach(function (d) {
-                                        _this3.svg.append('line').attr('x1', _this3.x(_this3.avgList[d])).attr('y1', _this3.height).attr('x2', _this3.x(_this3.avgList[d])).attr('y2', 0).attr('class', d + ' avgLine').attr('transform', 'translate(' + _this3.margin.left + ', 0)').style('display', 'none').style('stroke-width', 2).style('stroke', _this3.color(d)).style('stroke-opacity', 0.7);
+                                        _this4.svg.append('line').attr('x1', _this4.x(_this4.avgList[d])).attr('y1', _this4.height).attr('x2', _this4.x(_this4.avgList[d])).attr('y2', 0).attr('class', d + ' avgLine').attr('transform', 'translate(' + _this4.margin.left + ', 0)').style('display', 'none').style('stroke-width', 2).style('stroke', _this4.color(d)).style('stroke-opacity', 0.7);
                                     });
 
                                     this.bar = this.svg.selectAll('.bar').data(this.data).enter().append('g').attr('class', 'rect').attr('transform', function (d) {
-                                        return 'translate(' + _this3.margin.left + ', ' + _this3.y0(d.label) + ')';
+                                        return 'translate(' + _this4.margin.left + ', ' + _this4.y0(d.label) + ')';
                                     });
 
                                     this.barC = this.bar.selectAll('rect').data(function (d) {
@@ -273,37 +280,37 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                     }).enter();
 
                                     this.barC.append('rect').attr('height', this.y1.rangeBand()).attr('y', function (d) {
-                                        return _this3.y1(d.name);
+                                        return _this4.y1(d.name);
                                     }).attr('x', function (d) {
                                         return 0;
                                     }).attr('value', function (d) {
                                         return d.name;
                                     }).attr('width', function (d) {
-                                        return _this3.x(d.value);
+                                        return _this4.x(d.value);
                                     }).style('fill', function (d) {
-                                        return _this3.color(d.name);
+                                        return _this4.color(d.name);
                                     });
 
                                     this.barC.append('text').attr('x', function (d) {
-                                        return _this3.x(d.value) + 5;
+                                        return _this4.x(d.value) + 5;
                                     }).attr('y', function (d) {
-                                        return _this3.y1(d.name) + _this3.y1.rangeBand() / 2;
+                                        return _this4.y1(d.name) + _this4.y1.rangeBand() / 2;
                                     }).attr('dy', '.35em').text(function (d) {
                                         return d.value;
                                     });
 
                                     this.bar.on('mouseover', function (d) {
-                                        _this3.tips.style('left', 10 + 'px');
-                                        _this3.tips.style('top', 15 + 'px');
-                                        _this3.tips.style('display', "inline-block");
+                                        _this4.tips.style('left', 10 + 'px');
+                                        _this4.tips.style('top', 15 + 'px');
+                                        _this4.tips.style('display', "inline-block");
                                         var elements = d3.selectAll(':hover')[0];
                                         var elementData = elements[elements.length - 1].__data__;
-                                        _this3.tips.html(d.label + ' , ' + elementData.name + ' ,  ' + elementData.value);
+                                        _this4.tips.html(d.label + ' , ' + elementData.name + ' ,  ' + elementData.value);
                                         d3.selectAll('.' + elementData.name)[0][0].style.display = '';
                                     });
 
                                     this.bar.on('mouseout', function (d) {
-                                        _this3.tips.style('display', "none");
+                                        _this4.tips.style('display', "none");
                                         d3.selectAll('.avgLine')[0].forEach(function (d) {
                                             d.style.display = 'none';
                                         });
@@ -333,12 +340,19 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                     this.data = newData;
                                     this.draw();
                                 }
+                            }, {
+                                key: 'setColor',
+                                value: function setColor(c) {
+                                    this.color = c;
+                                    this.draw();
+                                }
                             }]);
 
                             return groupedBarChart;
                         }();
 
                         function onRender() {
+                            if (!ctrl.data) return;
                             var sample = [{ label: "Machine001", "Off": 20, "Down": 10, "Run": 50, "Idle": 20 }, { label: "Machine002", "Off": 15, "Down": 30, "Run": 40, "Idle": 15 }];
 
                             var Chart = new groupedBarChart({
@@ -347,7 +361,13 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                 element: '#chart',
                                 width: ctrl.panel.width,
                                 height: ctrl.panel.height,
-                                legend: ctrl.panel.legend.show
+                                legend: ctrl.panel.legend.show,
+                                color: ctrl.panel.colorSch
+                            });
+
+                            ctrl.panel.colorSet = [];
+                            Chart.options.forEach(function (d) {
+                                ctrl.panel.colorSet.push({ text: d, color: Chart.color(d) });
                             });
                         }
 
