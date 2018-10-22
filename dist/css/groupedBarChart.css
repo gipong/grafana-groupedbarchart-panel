@@ -10,11 +10,12 @@ svg {
     width: auto;
     height: auto;
     background: white;
+    opacity: 0.85;
     border: 0 none;
     border-radius: 8px 8px 8px 8px;
     color: black;
     font: 14px sans-serif;
-    padding: 5px;
+    padding: 10px;
     text-align: center;
 }
 .legend {

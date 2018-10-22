@@ -1,7 +1,7 @@
 {
   "name": "groupedbarchart-panel",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "repository": {
     "type": "git",
@@ -11,21 +11,23 @@
   "license": "MIT",
   "devDependencies": {
     "babel": "~6.5.1",
+    "babel-plugin-transform-es2015-modules-systemjs": "^6.24.1",
     "grunt": "~0.4.5",
-    "grunt-babel": "~6.0.0",
+    "grunt-babel": "^6.0.0",
     "grunt-contrib-clean": "~0.6.0",
     "grunt-contrib-copy": "~0.8.2",
     "grunt-contrib-uglify": "~0.11.0",
     "grunt-contrib-watch": "^0.6.1",
     "grunt-es6-module-transpiler": "^0.6.0",
     "grunt-execute": "~0.2.2",
-    "grunt-systemjs-builder": "^0.2.5",
+    "grunt-systemjs-builder": "^0.2.7",
     "load-grunt-tasks": "~3.2.0"
   },
   "dependencies": {
-    "babel-plugin-transform-es2015-modules-systemjs": "^6.5.0",
+    "babel-cli": "^6.26.0",
     "babel-plugin-transform-es2015-for-of": "^6.5.0",
-    "babel-preset-es2015": "^6.5.0",
-    "lodash": "~4.0.0"
+    "babel-preset-es2015": "^6.24.1",
+    "lodash": "~4.0.0",
+    "yarn": "^1.10.1"
   }
 }

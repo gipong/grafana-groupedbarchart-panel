@@ -68,8 +68,12 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
 
             panelDefaults = {
                 legend: {
-                    show: true
+                    show: true,
+                    position: 'On graph'
                 },
+                chartType: 'stacked bar chart',
+                orientation: 'vertical',
+                labelSpace: 40,
                 links: [],
                 datasource: null,
                 maxDataPoints: 3,
@@ -140,31 +144,35 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                 }, {
                     key: 'onDataReceived',
                     value: function onDataReceived(dataList) {
-
-                        var o = _.groupBy(dataList[0].rows, function (e) {
-                            return e[0];
-                        });
-                        _.forOwn(o, function (e, i) {
-                            var t = _.groupBy(e, function (sta) {
-                                return sta[1];
+                        if (dataList && dataList.length) {
+                            var o = _.groupBy(dataList[0].rows, function (e) {
+                                return e[0];
                             });
-                            o[i] = _.forOwn(t, function (sum, tid) {
-                                t[tid] = sum.map(function (s) {
-                                    return s[2];
-                                }).reduce(function (x, y) {
-                                    return x + y;
+                            _.forOwn(o, function (e, i) {
+                                var t = _.groupBy(e, function (sta) {
+                                    return sta[1];
+                                });
+                                o[i] = _.forOwn(t, function (sum, tid) {
+                                    t[tid] = sum.map(function (s) {
+                                        return s[2];
+                                    }).reduce(function (x, y) {
+                                        return x + y;
+                                    });
                                 });
                             });
-                        });
 
-                        var res = [];
-                        _.forOwn(o, function (e, i) {
-                            e.label = i;
-                            res.push(e);
-                        });
-                        this.data = res.sort(function (a, b) {
-                            return a.label > b.label ? -1 : b.label > a.label ? 1 : 0;
-                        });
+                            var res = [];
+                            _.forOwn(o, function (e, i) {
+                                e.label = i;
+                                res.push(e);
+                            });
+                            this.data = res.sort(function (a, b) {
+                                return a.label > b.label ? -1 : b.label > a.label ? 1 : 0;
+                            });
+                        } else {
+                            this.data = [{ label: "Machine001", "Off": 0, "Down": 50, "Run": 0, "Idle": 40 }, { label: "Machine002", "Off": 15, "Down": 5, "Run": 40, "Idle": 15 }, { label: "Machine003", "Off": 15, "Down": 30, "Run": 40, "Idle": 15 }, { label: "Machine004", "Off": 15, "Down": 30, "Run": 80, "Idle": 15 }];
+                        }
+
                         this.render();
                     }
                 }, {
@@ -191,6 +199,11 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                 this.width = opts.width;
                                 this.height = opts.height;
                                 this.showLegend = opts.legend;
+                                this.legendType = opts.position;
+                                this.chartType = opts.chartType;
+                                this.orientation = opts.orientation;
+                                this.labelSpace = opts.labelSpace;
+                                this.axesConfig = [];
                                 this.element = elem.find(opts.element)[0];
                                 this.options = d3.keys(this.data[0]).filter(function (key) {
                                     return key !== 'label';
@@ -203,9 +216,11 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                     return d !== 'valores';
                                 });
                                 this.data.forEach(function (d) {
-                                    d.valores = _this3.options.map(function (name) {
+                                    var stackVal = 0;
+                                    d.valores = _this3.options.map(function (name, i, o) {
+                                        if (i !== 0) stackVal = stackVal + +d[o[i - 1]];
                                         _this3.avgList[name] = _this3.avgList[name] + d[name];
-                                        return { name: name, value: +d[name] };
+                                        return { name: name, value: +d[name], stackVal: stackVal };
                                     });
                                 });
                                 this.options.forEach(function (d) {
@@ -225,39 +240,60 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                 value: function draw() {
                                     d3.select(this.element).html("");
                                     this.svg = d3.select(this.element).append('svg');
-                                    this.svg.attr('width', this.width).attr('height', this.height).attr('transform', 'translate(0, ' + this.margin.top + ')');
+                                    this.svg.attr('width', this.width).attr('height', this.height).style('padding', '10px').attr('transform', 'translate(0, ' + this.margin.top + ')');
 
                                     this.createScales();
                                     this.addAxes();
                                     this.addTooltips();
                                     this.addBar();
-                                    if (this.showLegend) this.addLegend();
+                                    if (this.showLegend) this.addLegend(this.legendType);
                                 }
                             }, {
                                 key: 'createScales',
                                 value: function createScales() {
-                                    this.y0 = d3.scale.ordinal().rangeRoundBands([this.height, 0], .2, 0.5);
+                                    switch (this.orientation) {
+                                        case 'horizontal':
+                                            this.y0 = d3.scale.ordinal().rangeRoundBands([+this.height, 0], .2, 0.5);
 
-                                    this.y1 = d3.scale.ordinal();
+                                            this.y1 = d3.scale.ordinal();
 
-                                    this.x = d3.scale.linear().range([0, this.width]);
+                                            this.x = d3.scale.linear().range([0, +this.width]);
+                                            this.axesConfig = [this.x, this.y0, this.y0, this.y1, this.x];
+                                            break;
+                                        case 'vertical':
+                                            this.x0 = d3.scale.ordinal().rangeRoundBands([0, +this.width], .2, 0.5);
+
+                                            this.x1 = d3.scale.ordinal();
+
+                                            this.y = d3.scale.linear().range([0, +this.height]);
+
+                                            this.axesConfig = [this.x0, this.y, this.x0, this.x1, this.y];
+                                            break;
+                                    }
                                 }
                             }, {
                                 key: 'addAxes',
                                 value: function addAxes() {
-                                    this.xAxis = d3.svg.axis().scale(this.x).tickSize(-this.height).orient('bottom');
+                                    var axesScale = this.chartType === 'bar chart' ? 1 : 1.1;
+                                    this.xAxis = d3.svg.axis().scale(this.axesConfig[0]).tickSize(-this.height).orient('bottom');
 
-                                    this.yAxis = d3.svg.axis().scale(this.y0).orient('left');
+                                    this.yAxis = d3.svg.axis().scale(this.axesConfig[1]).orient('left');
 
-                                    this.y0.domain(this.data.map(function (d) {
+                                    this.axesConfig[2].domain(this.data.map(function (d) {
                                         return d.label;
                                     }));
-                                    this.y1.domain(this.options).rangeRoundBands([0, this.y0.rangeBand()]);
-                                    this.x.domain([0, d3.max(this.data, function (d) {
+                                    this.axesConfig[3].domain(this.options).rangeRoundBands([0, this.axesConfig[2].rangeBand()]);
+
+                                    var domainCal = this.orientation === 'horizontal' ? [0, d3.max(this.data, function (d) {
                                         return d3.max(d.valores, function (d) {
-                                            return d.value;
+                                            return (d.value + d.stackVal) * axesScale;
                                         });
-                                    })]);
+                                    })] : [d3.max(this.data, function (d) {
+                                        return d3.max(d.valores, function (d) {
+                                            return (d.value + d.stackVal) * axesScale;
+                                        });
+                                    }), 0];
+                                    this.axesConfig[4].domain(domainCal);
 
                                     this.svg.append('g').attr('class', 'x axis').attr('transform', 'translate(' + this.margin.left + ', ' + this.height + ')').call(this.xAxis);
 
@@ -268,34 +304,70 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                 value: function addBar() {
                                     var _this4 = this;
 
-                                    this.options.forEach(function (d) {
-                                        _this4.svg.append('line').attr('x1', _this4.x(_this4.avgList[d])).attr('y1', _this4.height).attr('x2', _this4.x(_this4.avgList[d])).attr('y2', 0).attr('class', d + ' avgLine').attr('transform', 'translate(' + _this4.margin.left + ', 0)').style('display', 'none').style('stroke-width', 2).style('stroke', _this4.color(d)).style('stroke-opacity', 0.7);
-                                    });
+                                    var scale = this.chartType === 'bar chart' ? 1 : this.options.length;
+                                    switch (this.orientation) {
+                                        case 'horizontal':
+                                            this.options.forEach(function (d) {
+                                                _this4.svg.append('line').attr('x1', _this4.x(_this4.avgList[d])).attr('y1', _this4.height).attr('x2', _this4.x(_this4.avgList[d])).attr('y2', 0).attr('class', d + ' avgLine').attr('transform', 'translate(' + _this4.margin.left + ', 0)').style('display', 'none').style('stroke-width', 2).style('stroke', _this4.color(d)).style('stroke-opacity', 0.7);
+                                            });
 
-                                    this.bar = this.svg.selectAll('.bar').data(this.data).enter().append('g').attr('class', 'rect').attr('transform', function (d) {
-                                        return 'translate(' + _this4.margin.left + ', ' + _this4.y0(d.label) + ')';
-                                    });
+                                            this.bar = this.svg.selectAll('.bar').data(this.data).enter().append('g').attr('class', 'rect').attr('transform', function (d) {
+                                                return 'translate(' + _this4.margin.left + ', ' + _this4.y0(d.label) + ')';
+                                            });
 
-                                    this.barC = this.bar.selectAll('rect').data(function (d) {
-                                        return d.valores;
-                                    }).enter();
+                                            this.barC = this.bar.selectAll('rect').data(function (d) {
+                                                return d.valores;
+                                            }).enter();
 
-                                    this.barC.append('rect').attr('height', this.y1.rangeBand()).attr('y', function (d) {
-                                        return _this4.y1(d.name);
-                                    }).attr('x', function (d) {
-                                        return 0;
-                                    }).attr('value', function (d) {
-                                        return d.name;
-                                    }).attr('width', function (d) {
-                                        return _this4.x(d.value);
-                                    }).style('fill', function (d) {
-                                        return _this4.color(d.name);
-                                    });
+                                            this.barC.append('rect').attr('height', this.y1.rangeBand() * scale).attr('y', function (d) {
+                                                return _this4.chartType === 'bar chart' ? _this4.y1(d.name) : _this4.y0(d.label);
+                                            }).attr('x', function (d) {
+                                                return _this4.chartType === 'bar chart' ? 0 : _this4.x(d.stackVal);
+                                            }).attr('value', function (d) {
+                                                return d.name;
+                                            }).attr('width', function (d) {
+                                                return _this4.x(d.value);
+                                            }).style('fill', function (d) {
+                                                return _this4.color(d.name);
+                                            });
 
-                                    this.barC.append('text').attr('x', function (d) {
-                                        return _this4.x(d.value) + 5;
+                                            break;
+                                        case 'vertical':
+                                            this.options.forEach(function (d) {
+                                                _this4.svg.append('line').attr('x1', 0).attr('y1', _this4.y(_this4.avgList[d])).attr('x2', +_this4.width).attr('y2', _this4.y(_this4.avgList[d])).attr('class', d + ' avgLine').attr('transform', 'translate(' + _this4.margin.left + ', 0)').style('display', 'none').style('stroke-width', 2).style('stroke', _this4.color(d)).style('stroke-opacity', 0.7);
+                                            });
+
+                                            this.bar = this.svg.selectAll('.bar').data(this.data).enter().append('g').attr('class', 'rect').attr('transform', function (d, i) {
+                                                return 'translate(' + _this4.x0(d.label) + ', ' + (+_this4.height - _this4.margin.bottom) + ')';
+                                            });
+
+                                            this.barC = this.bar.selectAll('rect').data(function (d) {
+                                                return d.valores.map(function (e) {
+                                                    e.label = d.label;return e;
+                                                });
+                                            }).enter();
+
+                                            this.barC.append('rect').attr('id', function (d, i) {
+                                                return d.label + '_' + i;
+                                            }).attr('height', function (d) {
+                                                return +_this4.height - _this4.y(d.value);
+                                            }).attr('y', function (d) {
+                                                return _this4.chartType === 'bar chart' ? _this4.y(d.value) - _this4.height : _this4.y(d.value) - 2 * +_this4.height + _this4.y(d.stackVal);
+                                            }).attr('x', function (d, i) {
+                                                return _this4.chartType === 'bar chart' ? _this4.x1(d.name) + _this4.margin.left : _this4.x1(d.name) - _this4.x1.rangeBand() * i + _this4.margin.left;
+                                            }).attr('value', function (d) {
+                                                return d.name;
+                                            }).attr('width', this.x1.rangeBand() * scale).style('fill', function (d) {
+                                                return _this4.color(d.name);
+                                            });
+
+                                            break;
+                                    }
+
+                                    this.chartType === 'bar chart' && this.barC.append('text').attr('x', function (d) {
+                                        return _this4.orientation === 'horizontal' ? _this4.x(d.value) + 5 : _this4.x1(d.name) + _this4.x1.rangeBand() / 4 + _this4.margin.left;
                                     }).attr('y', function (d) {
-                                        return _this4.y1(d.name) + _this4.y1.rangeBand() / 2;
+                                        return _this4.orientation === 'horizontal' ? _this4.y1(d.name) + _this4.y1.rangeBand() / 2 : _this4.y(d.value) - _this4.height - 8;
                                     }).attr('dy', '.35em').text(function (d) {
                                         return d.value;
                                     });
@@ -319,16 +391,41 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                 }
                             }, {
                                 key: 'addLegend',
-                                value: function addLegend() {
-                                    this.legend = this.svg.selectAll('.legend').data(this.options.slice()).enter().append('g').attr('class', 'legend').attr('transform', function (d, i) {
-                                        return 'translate(0,' + i * 20 + ')';
-                                    });
+                                value: function addLegend(loc) {
+                                    var _this5 = this;
 
-                                    this.legend.append('rect').attr('x', this.width * 1.1 - 18).attr('width', 18).attr('height', 18).style('fill', this.color);
+                                    var labelSpace = this.labelSpace;
+                                    switch (loc) {
+                                        case 'On graph':
+                                            var defaultOptions = this.chartType == 'bar chart' || this.orientation == 'horizontal' ? this.options.slice() : this.options.slice().reverse();
+                                            this.legend = this.svg.selectAll('.legend').data(defaultOptions).enter().append('g').attr('class', 'legend').attr('transform', function (d, i) {
+                                                return 'translate(50,' + i * 20 + ')';
+                                            });
 
-                                    this.legend.append('text').attr('x', this.width * 1.1 - 24).attr('y', 9).attr('dy', '.35em').style('text-anchor', 'end').text(function (d) {
-                                        return d;
-                                    });
+                                            this.legend.append('rect').attr('x', this.width * 1.1 - 18).attr('width', 18).attr('height', 18).style('fill', this.color);
+
+                                            this.legend.append('text').attr('x', this.width * 1.1 - 24).attr('y', 9).attr('dy', '.35em').style('text-anchor', 'end').text(function (d) {
+                                                return d;
+                                            });
+                                            break;
+                                        case 'Under graph':
+                                            this.legend = this.svg.selectAll('.legend').data(this.options.slice()).enter().append('g').attr('class', 'legend').attr('transform', function (d, i) {
+                                                return 'translate(' + (+i * labelSpace - _this5.width) + ',' + (+_this5.height + 24) + ')';
+                                            });
+
+                                            this.legend.append('rect').attr('x', function (d, i) {
+                                                return i * labelSpace + _this5.width * 1.5 + 5;
+                                            }).attr('width', 18).attr('height', 18).style('fill', this.color);
+
+                                            this.legend.append('text').attr('x', function (d, i) {
+                                                return i * labelSpace + _this5.width * 1.5;
+                                            }).attr('dy', '1.1em').style('text-anchor', 'end').text(function (d) {
+                                                return d;
+                                            });
+                                            break;
+                                        default:
+                                            break;
+                                    }
                                 }
                             }, {
                                 key: 'addTooltips',
@@ -342,8 +439,6 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
 
                         function onRender() {
                             if (!ctrl.data) return;
-                            var sample = [{ label: "Machine001", "Off": 20, "Down": 10, "Run": 50, "Idle": 20 }, { label: "Machine002", "Off": 15, "Down": 30, "Run": 40, "Idle": 15 }];
-
                             var Chart = new groupedBarChart({
                                 data: ctrl.data,
                                 margin: { top: 10, left: 80, bottom: 10, right: 10 },
@@ -351,6 +446,10 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                 width: ctrl.panel.width,
                                 height: ctrl.panel.height,
                                 legend: ctrl.panel.legend.show,
+                                position: ctrl.panel.legend.position,
+                                chartType: ctrl.panel.chartType,
+                                orientation: ctrl.panel.orientation,
+                                labelSpace: ctrl.panel.labelSpace,
                                 color: ctrl.panel.colorSch
                             });
 
