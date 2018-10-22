@@ -4,12 +4,15 @@ import kbn from 'app/core/utils/kbn';
 import TimeSeries from 'app/core/time_series';
 import * as d3 from './external/d3.v3.min';
 import './css/groupedBarChart.css!';
-// import groupedBarChart from './external/groupedBarChart';
 
 const panelDefaults = {
     legend: {
-        show: true
+        show: true,
+        position: 'On graph',
     },
+    chartType: 'stacked bar chart',
+    orientation: 'vertical',
+    labelSpace: 40,
     links: [],
     datasource: null,
     maxDataPoints: 3,
@@ -60,24 +63,33 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
 
     updateColorSet() {
         this.panel.colorSch = [];
-        this.panel.colorSet.forEach(d=>this.panel.colorSch.push(d.color));
+        this.panel.colorSet.forEach(d => this.panel.colorSch.push(d.color));
         this.render();
     }
 
     onDataReceived(dataList) {
+        if (dataList && dataList.length) {
+            let o = _.groupBy(dataList[0].rows, e => e[0]);
+            _.forOwn(o, (e, i) => {
+                let t = _.groupBy(e, sta => sta[1]);
+                o[i] = _.forOwn(t, (sum, tid) => {t[tid] = sum.map(s => s[2]).reduce((x,y) => x+y)})
+            });
 
-        let o = _.groupBy(dataList[0].rows, e=>e[0]);
-        _.forOwn(o, (e, i)=>{
-            let t = _.groupBy(e, sta=>sta[1]);
-            o[i] = _.forOwn(t, (sum, tid)=>{t[tid] = sum.map(s=>s[2]).reduce((x,y)=>x+y)})
-        });
-
-        let res = [];
-        _.forOwn(o, (e, i)=> {
-            e.label = i;
-            res.push(e);
-        });
-        this.data = res.sort((a, b)=>{return (a.label>b.label)?-1:((b.label>a.label)?1:0)});
+            let res = [];
+            _.forOwn(o, (e, i) => {
+                e.label = i;
+                res.push(e);
+            });
+            this.data = res.sort((a, b) => {return (a.label>b.label)?-1:((b.label>a.label)?1:0)});
+        } else {
+            this.data = [
+                {label:"Machine001", "Off":0, "Down":50, "Run": 0, "Idle":40},
+                {label:"Machine002", "Off":15, "Down":5, "Run":40, "Idle":15},
+                {label:"Machine003", "Off":15, "Down":30, "Run":40, "Idle":15},
+                {label:"Machine004", "Off":15, "Down":30, "Run":80, "Idle":15}
+            ];
+        }
+        
         this.render();
     }
 
@@ -98,21 +110,28 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 this.width = opts.width;
                 this.height = opts.height;
                 this.showLegend = opts.legend;
+                this.legendType = opts.position;
+                this.chartType = opts.chartType;
+                this.orientation = opts.orientation;
+                this.labelSpace = opts.labelSpace;
+                this.axesConfig = [];
                 this.element = elem.find(opts.element)[0];
                 this.options = d3.keys(this.data[0]).filter(function(key) { return key !== 'label'; });
                 this.avgList = {};
-                this.options.forEach(d=>{this.avgList[d] = 0});
-                this.options = this.options.filter(d=>d!=='valores');
-                this.data.forEach(d=> {
-                    d.valores = this.options.map(name=> {
+                this.options.forEach(d => {this.avgList[d] = 0});
+                this.options = this.options.filter(d => d!=='valores');
+                this.data.forEach(d => {
+                    let stackVal = 0;
+                    d.valores = this.options.map((name, i, o) => {
+                        if (i !== 0) stackVal = stackVal + (+d[o[i-1]]);
                         this.avgList[name] = this.avgList[name] + d[name];
-                        return {name: name, value: +d[name]};
+                        return {name: name, value: +d[name], stackVal: stackVal};
                     });
                 });
-                this.options.forEach(d=>{
+                this.options.forEach(d => {
                     this.avgList[d] /= this.data.length;
                 });
-                if(opts.color.length == 0) {
+                if (opts.color.length == 0) {
                     this.color = d3.scale.ordinal()
                         .range(d3.scale.category20().range());
                 } else {
@@ -128,39 +147,61 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 this.svg = d3.select(this.element).append('svg');
                 this.svg.attr('width', this.width)
                     .attr('height', this.height)
+                    .style('padding', '10px')
                     .attr('transform', `translate(0, ${this.margin.top})`);
 
                 this.createScales();
                 this.addAxes();
                 this.addTooltips();
                 this.addBar();
-                if(this.showLegend) this.addLegend();
+                if (this.showLegend) this.addLegend(this.legendType);
             }
 
             createScales() {
-                this.y0 = d3.scale.ordinal()
-                    .rangeRoundBands([this.height, 0], .2, 0.5);
+                switch(this.orientation) {
+                    case 'horizontal':
+                        this.y0 = d3.scale.ordinal()
+                            .rangeRoundBands([+this.height, 0], .2, 0.5);
 
-                this.y1 = d3.scale.ordinal();
+                        this.y1 = d3.scale.ordinal();
 
-                this.x = d3.scale.linear()
-                    .range([0, this.width]);
+                        this.x = d3.scale.linear()
+                            .range([0, +this.width]);
+                        this.axesConfig = [this.x, this.y0, this.y0, this.y1, this.x];
+                        break;
+                    case 'vertical':
+                        this.x0 = d3.scale.ordinal()
+                            .rangeRoundBands([0, +this.width], .2, 0.5);
+
+                        this.x1 = d3.scale.ordinal();
+
+                        this.y = d3.scale.linear()
+                            .range([0, +this.height]);
+                        
+                        this.axesConfig = [this.x0, this.y, this.x0, this.x1, this.y];
+                        break;
+                }
 
             }
 
             addAxes() {
+                let axesScale = (this.chartType === 'bar chart') ? 1 : 1.1;
                 this.xAxis = d3.svg.axis()
-                    .scale(this.x)
+                    .scale(this.axesConfig[0])
                     .tickSize(-this.height)
                     .orient('bottom');
 
                 this.yAxis = d3.svg.axis()
-                    .scale(this.y0)
+                    .scale(this.axesConfig[1])
                     .orient('left');
 
-                this.y0.domain(this.data.map(d=> { return d.label; }));
-                this.y1.domain(this.options).rangeRoundBands([0, this.y0.rangeBand()]);
-                this.x.domain([0, d3.max(this.data, function(d) { return d3.max(d.valores, d=> { return d.value; }); })]);
+                this.axesConfig[2].domain(this.data.map(d => { return d.label; }));
+                this.axesConfig[3].domain(this.options).rangeRoundBands([0, this.axesConfig[2].rangeBand()]);
+
+                let domainCal = (this.orientation === 'horizontal') 
+                    ? [0, d3.max(this.data, function(d) { return d3.max(d.valores, d => { return (d.value + d.stackVal)*axesScale; }); })]
+                    : [d3.max(this.data, function(d) { return d3.max(d.valores, d => { return (d.value + d.stackVal)*axesScale; }); }), 0];
+                this.axesConfig[4].domain(domainCal);
 
                 this.svg.append('g')
                     .attr('class', 'x axis')
@@ -171,50 +212,111 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                     .attr('class', 'y axis')
                     .attr('transform', `translate(${this.margin.left}, 0)`)
                     .call(this.yAxis);
+                
             }
 
             addBar() {
-                this.options.forEach(d=> {
-                    this.svg.append('line')
-                        .attr('x1', this.x(this.avgList[d]))
-                        .attr('y1', this.height)
-                        .attr('x2', this.x(this.avgList[d]))
-                        .attr('y2', 0)
-                        .attr('class', `${d} avgLine`)
-                        .attr('transform', `translate(${this.margin.left}, 0)`)
-                        .style('display', 'none')
-                        .style('stroke-width', 2)
-                        .style('stroke', this.color(d))
-                        .style('stroke-opacity', 0.7);
-                });
+                let scale = (this.chartType === 'bar chart') ? 1 : this.options.length;
+                switch(this.orientation) {
+                    case 'horizontal':
+                        this.options.forEach(d => {
+                            this.svg.append('line')
+                                .attr('x1', this.x(this.avgList[d]))
+                                .attr('y1', this.height)
+                                .attr('x2', this.x(this.avgList[d]))
+                                .attr('y2', 0)
+                                .attr('class', `${d} avgLine`)
+                                .attr('transform', `translate(${this.margin.left}, 0)`)
+                                .style('display', 'none')
+                                .style('stroke-width', 2)
+                                .style('stroke', this.color(d))
+                                .style('stroke-opacity', 0.7);
+                        });
 
-                this.bar = this.svg.selectAll('.bar')
-                    .data(this.data)
-                    .enter().append('g')
-                    .attr('class', 'rect')
-                    .attr('transform', d=> {
-                        return `translate(${this.margin.left}, ${this.y0(d.label)})`;
-                    });
+                        this.bar = this.svg.selectAll('.bar')
+                            .data(this.data)
+                            .enter().append('g')
+                            .attr('class', 'rect')
+                            .attr('transform', d => {
+                                return `translate(${this.margin.left}, ${this.y0(d.label)})`;
+                            });
 
-                this.barC = this.bar.selectAll('rect')
-                    .data(d=> { return d.valores; })
-                    .enter();
+                        this.barC = this.bar.selectAll('rect')
+                            .data(d => { return d.valores; })
+                            .enter();
 
-                this.barC.append('rect')
-                    .attr('height', this.y1.rangeBand())
-                    .attr('y', d=> { return this.y1(d.name);})
-                    .attr('x', d=> { return 0;})
-                    .attr('value', d=> { return d.name;})
-                    .attr('width', d=> { return this.x(d.value);})
-                    .style('fill', d=> { return this.color(d.name);});
+                        
+                        this.barC.append('rect')
+                            .attr('height', this.y1.rangeBand()*scale)
+                            .attr('y', d => { 
+                                return (this.chartType === 'bar chart') ? this.y1(d.name) : this.y0(d.label);
+                            })
+                            .attr('x', d => { 
+                                return (this.chartType === 'bar chart') ? 0 : this.x(d.stackVal);
+                            })
+                            .attr('value', d => { return d.name;})
+                            .attr('width', (d) => { return this.x(d.value);})
+                            .style('fill', d => { return this.color(d.name);});
 
-                this.barC.append('text')
-                    .attr('x', d=> { return this.x(d.value) +5;  })
-                    .attr('y', d=> { return this.y1(d.name) +(this.y1.rangeBand()/2); })
+                        break;
+                    case 'vertical':
+                        this.options.forEach(d => {
+                            this.svg.append('line')
+                                .attr('x1', 0)
+                                .attr('y1', this.y(this.avgList[d]))
+                                .attr('x2', +this.width)
+                                .attr('y2', this.y(this.avgList[d]))
+                                .attr('class', `${d} avgLine`)
+                                .attr('transform', `translate(${this.margin.left}, 0)`)
+                                .style('display', 'none')
+                                .style('stroke-width', 2)
+                                .style('stroke', this.color(d))
+                                .style('stroke-opacity', 0.7)
+                        });
+
+                        this.bar = this.svg.selectAll('.bar')
+                            .data(this.data)
+                            .enter().append('g')
+                            .attr('class', 'rect')
+                            .attr('transform', (d, i) => {
+                                return `translate(${this.x0(d.label)}, ${+this.height - this.margin.bottom})`;
+                            });
+
+                        this.barC = this.bar.selectAll('rect')
+                            .data(d => { return d.valores.map(e => { e.label = d.label; return e;}); })
+                            .enter();
+
+                        this.barC.append('rect')
+                            .attr('id', (d, i) => { return `${d.label}_${i}`;})
+                            .attr('height', d => { return +this.height - this.y(d.value);})
+                            .attr('y', d => { 
+                                return (this.chartType === 'bar chart') ? this.y(d.value) - this.height :  (this.y(d.value) - 2*(+this.height) + this.y(d.stackVal));
+                            })
+                            .attr('x', (d, i) => { 
+                                return (this.chartType === 'bar chart') ? this.x1(d.name) + this.margin.left : this.x1(d.name) - this.x1.rangeBand()*i + this.margin.left;
+                            })
+                            .attr('value', d => { return d.name;})
+                            .attr('width', this.x1.rangeBand()*scale)
+                            .style('fill', d => { return this.color(d.name);});
+
+                        break;
+                }
+
+                (this.chartType === 'bar chart') && this.barC.append('text')
+                    .attr('x', d => { 
+                        return (this.orientation === 'horizontal') 
+                        ? this.x(d.value) +5
+                        : this.x1(d.name) + this.x1.rangeBand()/4 + this.margin.left;  
+                    })
+                    .attr('y', d => { 
+                        return (this.orientation === 'horizontal')
+                        ? this.y1(d.name) +(this.y1.rangeBand()/2)
+                        : this.y(d.value) - this.height -8; 
+                    })
                     .attr('dy', '.35em')
-                    .text(d=> { return d.value; });
+                    .text(d => { return d.value; });
 
-                this.bar.on('mouseover', d=> {
+                this.bar.on('mouseover', d => {
                     this.tips.style('left', `${10}px`);
                     this.tips.style('top', `${15}px`);
                     this.tips.style('display', "inline-block");
@@ -224,33 +326,60 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                     d3.selectAll(`.${elementData.name}`)[0][0].style.display = '';
                 });
 
-                this.bar.on('mouseout', d=> {
+                this.bar.on('mouseout', d => {
                     this.tips.style('display', "none");
-                    d3.selectAll('.avgLine')[0].forEach(d=> {
+                    d3.selectAll('.avgLine')[0].forEach(d => {
                        d.style.display = 'none';
                     });
                 });
             }
 
-            addLegend() {
-                this.legend = this.svg.selectAll('.legend')
-                    .data(this.options.slice())
-                    .enter().append('g')
-                    .attr('class', 'legend')
-                    .attr('transform', (d, i)=> { return `translate(0,${i*20})`; });
+            addLegend(loc) {
+                let labelSpace = this.labelSpace;
+                switch(loc) {
+                    case 'On graph':
+                        let defaultOptions = (this.chartType == 'bar chart' || this.orientation == 'horizontal') ? this.options.slice(): this.options.slice().reverse();
+                        this.legend = this.svg.selectAll('.legend')
+                            .data(defaultOptions)
+                            .enter().append('g')
+                            .attr('class', 'legend')
+                            .attr('transform', (d, i) => { return `translate(50,${i*20})`; });
 
-                this.legend.append('rect')
-                    .attr('x', this.width*1.1 - 18)
-                    .attr('width', 18)
-                    .attr('height', 18)
-                    .style('fill', this.color);
+                        this.legend.append('rect')
+                            .attr('x', this.width*1.1 - 18)
+                            .attr('width', 18)
+                            .attr('height', 18)
+                            .style('fill', this.color);
 
-                this.legend.append('text')
-                    .attr('x', this.width*1.1 - 24)
-                    .attr('y', 9)
-                    .attr('dy', '.35em')
-                    .style('text-anchor', 'end')
-                    .text(d=> { return d; });
+                        this.legend.append('text')
+                            .attr('x', this.width*1.1 - 24)
+                            .attr('y', 9)
+                            .attr('dy', '.35em')
+                            .style('text-anchor', 'end')
+                            .text(d => { return d; });
+                        break;
+                    case 'Under graph':
+                        this.legend = this.svg.selectAll('.legend')
+                            .data(this.options.slice())
+                            .enter().append('g')
+                            .attr('class', 'legend')
+                            .attr('transform', (d, i) => { return `translate(${+i*labelSpace - this.width},${+this.height + 24})`; });
+
+                        this.legend.append('rect')
+                            .attr('x', (d, i) => { return (i*labelSpace + this.width*1.5 +5);})
+                            .attr('width', 18)
+                            .attr('height', 18)
+                            .style('fill', this.color);
+
+                        this.legend.append('text')
+                            .attr('x', (d, i) => { return (i*labelSpace + this.width*1.5); })
+                            .attr('dy', '1.1em')
+                            .style('text-anchor', 'end')
+                            .text(d => { return d; });
+                        break;
+                    default:
+                        break;
+                }
             }
 
             addTooltips() {
@@ -261,11 +390,6 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
 
         function onRender() {
             if(!ctrl.data) return;
-            let sample = [
-                {label:"Machine001", "Off":20, "Down":10, "Run": 50, "Idle":20},
-                {label:"Machine002", "Off":15, "Down":30, "Run":40, "Idle":15}
-            ];
-
             var Chart = new groupedBarChart({
                 data: ctrl.data,
                 margin: {top: 10, left: 80, bottom: 10, right: 10},
@@ -273,11 +397,15 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 width: ctrl.panel.width,
                 height: ctrl.panel.height,
                 legend: ctrl.panel.legend.show,
+                position: ctrl.panel.legend.position,
+                chartType: ctrl.panel.chartType,
+                orientation: ctrl.panel.orientation,
+                labelSpace: ctrl.panel.labelSpace,
                 color: ctrl.panel.colorSch
             });
 
             ctrl.panel.colorSet = [];
-            Chart.options.forEach(d=> {
+            Chart.options.forEach(d => {
                 ctrl.panel.colorSet.push({text: d, color: Chart.color(d)});
             });
         }
