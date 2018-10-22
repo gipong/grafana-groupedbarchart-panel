@@ -16,7 +16,7 @@ showing information about sub-groups( second column ) of the main categories ( f
 
 ### options
 
-![options](src/img/groupedbarchart-options.png)
+![options](src/img/groupedbarchart-options-n.png)
 
 ### colors
 
