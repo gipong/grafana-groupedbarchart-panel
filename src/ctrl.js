@@ -11,7 +11,9 @@ const panelDefaults = {
         position: 'On graph',
     },
     chartType: 'stacked bar chart',
+    labelOrientation: 'horizontal',
     orientation: 'vertical',
+    avgLineShow: true,
     labelSpace: 40,
     links: [],
     datasource: null,
@@ -25,6 +27,7 @@ const panelDefaults = {
     valueName: 'current',
     strokeWidth: 1,
     fontSize: '80%',
+    fontColor: '#fff',
     width: 800,
     height: 400,
     colorSet: [],
@@ -83,7 +86,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
             this.data = res.sort((a, b) => {return (a.label>b.label)?-1:((b.label>a.label)?1:0)});
         } else {
             this.data = [
-                {label:"Machine001", "Off":0, "Down":50, "Run": 0, "Idle":40},
+                {label:"Machine001", "Off":15, "Down":50, "Run": 0, "Idle":40},
                 {label:"Machine002", "Off":15, "Down":5, "Run":40, "Idle":15},
                 {label:"Machine003", "Off":15, "Down":30, "Run":40, "Idle":15},
                 {label:"Machine004", "Off":15, "Down":30, "Run":80, "Idle":15}
@@ -114,6 +117,9 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 this.chartType = opts.chartType;
                 this.orientation = opts.orientation;
                 this.labelSpace = opts.labelSpace;
+                this.fontColor = opts.fontColor;
+                this.labelOrientation = opts.labelOrientation;
+                this.avgLineShow = opts.avgLineShow;
                 this.axesConfig = [];
                 this.element = elem.find(opts.element)[0];
                 this.options = d3.keys(this.data[0]).filter(function(key) { return key !== 'label'; });
@@ -203,15 +209,36 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                     : [d3.max(this.data, function(d) { return d3.max(d.valores, d => { return (d.value + d.stackVal)*axesScale; }); }), 0];
                 this.axesConfig[4].domain(domainCal);
 
-                this.svg.append('g')
+                let xAxisConfig = this.svg.append('g')
                     .attr('class', 'x axis')
                     .attr('transform', `translate(${this.margin.left}, ${this.height})`)
-                    .call(this.xAxis);
+                    .call(this.xAxis)
+                    .selectAll('text')
+                    .style('fill', `${this.fontColor}`)
 
-                this.svg.append('g')
+                switch(this.labelOrientation) {
+                    case 'horizontal':
+                        break;
+                    case '45 degrees':
+                        xAxisConfig.style('text-anchor', 'end')
+                            .style('transform', 'rotate(-45deg)');
+                        break;
+                    case 'vertical':
+                        xAxisConfig.style('text-anchor', 'end')
+                            .style('transform', 'rotate(-90deg)');
+                        break;
+                }
+
+                let yAxisConfig = this.svg.append('g')
                     .attr('class', 'y axis')
                     .attr('transform', `translate(${this.margin.left}, 0)`)
-                    .call(this.yAxis);
+                    .style('fill', `${this.fontColor}`)
+                    .call(this.yAxis)
+
+                yAxisConfig.selectAll('text')
+                    .style('fill', `${this.fontColor}`);
+                yAxisConfig.selectAll('path')
+                    .style('stroke', `${this.fontColor}`);
                 
             }
 
@@ -219,7 +246,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 let scale = (this.chartType === 'bar chart') ? 1 : this.options.length;
                 switch(this.orientation) {
                     case 'horizontal':
-                        this.options.forEach(d => {
+                        this.avgLineShow && this.options.forEach(d => {
                             this.svg.append('line')
                                 .attr('x1', this.x(this.avgList[d]))
                                 .attr('y1', this.height)
@@ -260,14 +287,14 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
 
                         break;
                     case 'vertical':
-                        this.options.forEach(d => {
+                        this.avgLineShow && this.options.forEach(d => {
                             this.svg.append('line')
                                 .attr('x1', 0)
                                 .attr('y1', this.y(this.avgList[d]))
                                 .attr('x2', +this.width)
                                 .attr('y2', this.y(this.avgList[d]))
                                 .attr('class', `${d} avgLine`)
-                                .attr('transform', `translate(${this.margin.left}, 0)`)
+                                .attr('transform', `translate(${this.margin.left}, ${0})`)
                                 .style('display', 'none')
                                 .style('stroke-width', 2)
                                 .style('stroke', this.color(d))
@@ -279,7 +306,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                             .enter().append('g')
                             .attr('class', 'rect')
                             .attr('transform', (d, i) => {
-                                return `translate(${this.x0(d.label)}, ${+this.height - this.margin.bottom})`;
+                                return `translate(${this.x0(d.label)}, ${+this.height})`;
                             });
 
                         this.barC = this.bar.selectAll('rect')
@@ -323,7 +350,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                     let elements = d3.selectAll(':hover')[0];
                     let elementData = elements[elements.length-1].__data__;
                     this.tips.html(`${d.label} , ${elementData.name} ,  ${elementData.value}`);
-                    d3.selectAll(`.${elementData.name}`)[0][0].style.display = '';
+                    if (this.avgLineShow) d3.selectAll(`.${elementData.name}`)[0][0].style.display = '';
                 });
 
                 this.bar.on('mouseout', d => {
@@ -356,6 +383,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                             .attr('y', 9)
                             .attr('dy', '.35em')
                             .style('text-anchor', 'end')
+                            .style('fill', `${this.fontColor}`)
                             .text(d => { return d; });
                         break;
                     case 'Under graph':
@@ -366,15 +394,16 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                             .attr('transform', (d, i) => { return `translate(${+i*labelSpace - this.width},${+this.height + 24})`; });
 
                         this.legend.append('rect')
-                            .attr('x', (d, i) => { return (i*labelSpace + this.width*1.5 +5);})
+                            .attr('x', (d, i) => { return (i*labelSpace + this.margin.left + this.width*1 +0);})
                             .attr('width', 18)
                             .attr('height', 18)
                             .style('fill', this.color);
 
                         this.legend.append('text')
-                            .attr('x', (d, i) => { return (i*labelSpace + this.width*1.5); })
+                            .attr('x', (d, i) => { return (i*labelSpace + this.margin.left + this.width*1) +5; })
+                            .attr('dx', 18)
                             .attr('dy', '1.1em')
-                            .style('text-anchor', 'end')
+                            .style('text-anchor', 'start')
                             .text(d => { return d; });
                         break;
                     default:
@@ -397,10 +426,13 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 width: ctrl.panel.width,
                 height: ctrl.panel.height,
                 legend: ctrl.panel.legend.show,
+                fontColor: ctrl.panel.fontColor,
                 position: ctrl.panel.legend.position,
                 chartType: ctrl.panel.chartType,
                 orientation: ctrl.panel.orientation,
+                labelOrientation: ctrl.panel.labelOrientation,
                 labelSpace: ctrl.panel.labelSpace,
+                avgLineShow: ctrl.panel.avgLineShow,
                 color: ctrl.panel.colorSch
             });
 

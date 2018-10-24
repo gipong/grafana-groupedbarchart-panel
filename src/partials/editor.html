@@ -12,6 +12,23 @@
     </div>
 
     <div class="section gf-form-group">
+        <h5 class="section-heading">Label</h5>
+        <div class="gf-form">
+            <span class="gf-form-label width-11">Orientation</span>
+            <div class="gf-form-select-wrapper width-9">
+                <select class="gf-form-input" ng-model="ctrl.panel.labelOrientation" ng-options="t for t in ['horizontal', '45 degrees', 'vertical']" ng-change="ctrl.render()"></select>
+            </div>
+        </div>
+        <gf-form-switch class="gf-form" label="Show Average Line" label-class="width-11" checked="ctrl.panel.avgLineShow" on-change="ctrl.render()"></gf-form-switch>
+        <div class="gf-form">
+            <span class="gf-form-label width-11">FontColor</span>
+            <span class="gf-form-label">
+                <spectrum-picker ng-model="ctrl.panel.fontColor" ng-change="ctrl.render()" ></spectrum-picker>
+            </span>
+        </div>
+    </div>
+
+    <div class="section gf-form-group">
         <h5 class="section-heading">Legend</h5>
         <gf-form-switch class="gf-form" label="Show Legend" label-class="width-11" checked="ctrl.panel.legend.show" on-change="ctrl.render()"></gf-form-switch>
         <div class="gf-form">
