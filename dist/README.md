@@ -1,11 +1,11 @@
 ## Grouped Bar Chart Panel Plugin for Grafana
 
-grouped bar chart
+grouped bar chart (stacked or side by side, horizontal or vertical)
 
 ## Screenshots
 ### chart
 
-
+![gif](src/img/0xrDREJY9o.gif)
 ![chart](src/img/groupedbarchart.png)
 
 ### metrics
@@ -16,7 +16,7 @@ showing information about sub-groups( second column ) of the main categories ( f
 
 ### options
 
-![options](src/img/groupedbarchart-options.png)
+![options](src/img/groupedbarchart-options-n.png)
 
 ### colors
 

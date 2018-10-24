@@ -5,7 +5,7 @@ grouped bar chart (stacked or side by side, horizontal or vertical)
 ## Screenshots
 ### chart
 
-![gif](src/img/H81Ydt9B28.gif)
+![gif](src/img/0xrDREJY9o.gif)
 ![chart](src/img/groupedbarchart.png)
 
 ### metrics

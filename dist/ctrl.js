@@ -72,7 +72,9 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                     position: 'On graph'
                 },
                 chartType: 'stacked bar chart',
+                labelOrientation: 'horizontal',
                 orientation: 'vertical',
+                avgLineShow: true,
                 labelSpace: 40,
                 links: [],
                 datasource: null,
@@ -86,6 +88,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                 valueName: 'current',
                 strokeWidth: 1,
                 fontSize: '80%',
+                fontColor: '#fff',
                 width: 800,
                 height: 400,
                 colorSet: [],
@@ -170,7 +173,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                 return a.label > b.label ? -1 : b.label > a.label ? 1 : 0;
                             });
                         } else {
-                            this.data = [{ label: "Machine001", "Off": 0, "Down": 50, "Run": 0, "Idle": 40 }, { label: "Machine002", "Off": 15, "Down": 5, "Run": 40, "Idle": 15 }, { label: "Machine003", "Off": 15, "Down": 30, "Run": 40, "Idle": 15 }, { label: "Machine004", "Off": 15, "Down": 30, "Run": 80, "Idle": 15 }];
+                            this.data = [{ label: "Machine001", "Off": 15, "Down": 50, "Run": 0, "Idle": 40 }, { label: "Machine002", "Off": 15, "Down": 5, "Run": 40, "Idle": 15 }, { label: "Machine003", "Off": 15, "Down": 30, "Run": 40, "Idle": 15 }, { label: "Machine004", "Off": 15, "Down": 30, "Run": 80, "Idle": 15 }];
                         }
 
                         this.render();
@@ -203,6 +206,9 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                 this.chartType = opts.chartType;
                                 this.orientation = opts.orientation;
                                 this.labelSpace = opts.labelSpace;
+                                this.fontColor = opts.fontColor;
+                                this.labelOrientation = opts.labelOrientation;
+                                this.avgLineShow = opts.avgLineShow;
                                 this.axesConfig = [];
                                 this.element = elem.find(opts.element)[0];
                                 this.options = d3.keys(this.data[0]).filter(function (key) {
@@ -295,9 +301,23 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                     }), 0];
                                     this.axesConfig[4].domain(domainCal);
 
-                                    this.svg.append('g').attr('class', 'x axis').attr('transform', 'translate(' + this.margin.left + ', ' + this.height + ')').call(this.xAxis);
+                                    var xAxisConfig = this.svg.append('g').attr('class', 'x axis').attr('transform', 'translate(' + this.margin.left + ', ' + this.height + ')').call(this.xAxis).selectAll('text').style('fill', '' + this.fontColor);
 
-                                    this.svg.append('g').attr('class', 'y axis').attr('transform', 'translate(' + this.margin.left + ', 0)').call(this.yAxis);
+                                    switch (this.labelOrientation) {
+                                        case 'horizontal':
+                                            break;
+                                        case '45 degrees':
+                                            xAxisConfig.style('text-anchor', 'end').style('transform', 'rotate(-45deg)');
+                                            break;
+                                        case 'vertical':
+                                            xAxisConfig.style('text-anchor', 'end').style('transform', 'rotate(-90deg)');
+                                            break;
+                                    }
+
+                                    var yAxisConfig = this.svg.append('g').attr('class', 'y axis').attr('transform', 'translate(' + this.margin.left + ', 0)').style('fill', '' + this.fontColor).call(this.yAxis);
+
+                                    yAxisConfig.selectAll('text').style('fill', '' + this.fontColor);
+                                    yAxisConfig.selectAll('path').style('stroke', '' + this.fontColor);
                                 }
                             }, {
                                 key: 'addBar',
@@ -307,7 +327,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                     var scale = this.chartType === 'bar chart' ? 1 : this.options.length;
                                     switch (this.orientation) {
                                         case 'horizontal':
-                                            this.options.forEach(function (d) {
+                                            this.avgLineShow && this.options.forEach(function (d) {
                                                 _this4.svg.append('line').attr('x1', _this4.x(_this4.avgList[d])).attr('y1', _this4.height).attr('x2', _this4.x(_this4.avgList[d])).attr('y2', 0).attr('class', d + ' avgLine').attr('transform', 'translate(' + _this4.margin.left + ', 0)').style('display', 'none').style('stroke-width', 2).style('stroke', _this4.color(d)).style('stroke-opacity', 0.7);
                                             });
 
@@ -333,12 +353,12 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
 
                                             break;
                                         case 'vertical':
-                                            this.options.forEach(function (d) {
-                                                _this4.svg.append('line').attr('x1', 0).attr('y1', _this4.y(_this4.avgList[d])).attr('x2', +_this4.width).attr('y2', _this4.y(_this4.avgList[d])).attr('class', d + ' avgLine').attr('transform', 'translate(' + _this4.margin.left + ', 0)').style('display', 'none').style('stroke-width', 2).style('stroke', _this4.color(d)).style('stroke-opacity', 0.7);
+                                            this.avgLineShow && this.options.forEach(function (d) {
+                                                _this4.svg.append('line').attr('x1', 0).attr('y1', _this4.y(_this4.avgList[d])).attr('x2', +_this4.width).attr('y2', _this4.y(_this4.avgList[d])).attr('class', d + ' avgLine').attr('transform', 'translate(' + _this4.margin.left + ', ' + 0 + ')').style('display', 'none').style('stroke-width', 2).style('stroke', _this4.color(d)).style('stroke-opacity', 0.7);
                                             });
 
                                             this.bar = this.svg.selectAll('.bar').data(this.data).enter().append('g').attr('class', 'rect').attr('transform', function (d, i) {
-                                                return 'translate(' + _this4.x0(d.label) + ', ' + (+_this4.height - _this4.margin.bottom) + ')';
+                                                return 'translate(' + _this4.x0(d.label) + ', ' + +_this4.height + ')';
                                             });
 
                                             this.barC = this.bar.selectAll('rect').data(function (d) {
@@ -379,7 +399,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                         var elements = d3.selectAll(':hover')[0];
                                         var elementData = elements[elements.length - 1].__data__;
                                         _this4.tips.html(d.label + ' , ' + elementData.name + ' ,  ' + elementData.value);
-                                        d3.selectAll('.' + elementData.name)[0][0].style.display = '';
+                                        if (_this4.avgLineShow) d3.selectAll('.' + elementData.name)[0][0].style.display = '';
                                     });
 
                                     this.bar.on('mouseout', function (d) {
@@ -404,7 +424,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
 
                                             this.legend.append('rect').attr('x', this.width * 1.1 - 18).attr('width', 18).attr('height', 18).style('fill', this.color);
 
-                                            this.legend.append('text').attr('x', this.width * 1.1 - 24).attr('y', 9).attr('dy', '.35em').style('text-anchor', 'end').text(function (d) {
+                                            this.legend.append('text').attr('x', this.width * 1.1 - 24).attr('y', 9).attr('dy', '.35em').style('text-anchor', 'end').style('fill', '' + this.fontColor).text(function (d) {
                                                 return d;
                                             });
                                             break;
@@ -414,12 +434,12 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                             });
 
                                             this.legend.append('rect').attr('x', function (d, i) {
-                                                return i * labelSpace + _this5.width * 1.5 + 5;
+                                                return i * labelSpace + _this5.margin.left + _this5.width * 1 + 0;
                                             }).attr('width', 18).attr('height', 18).style('fill', this.color);
 
                                             this.legend.append('text').attr('x', function (d, i) {
-                                                return i * labelSpace + _this5.width * 1.5;
-                                            }).attr('dy', '1.1em').style('text-anchor', 'end').text(function (d) {
+                                                return i * labelSpace + _this5.margin.left + _this5.width * 1 + 5;
+                                            }).attr('dx', 18).attr('dy', '1.1em').style('text-anchor', 'start').text(function (d) {
                                                 return d;
                                             });
                                             break;
@@ -446,10 +466,13 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                 width: ctrl.panel.width,
                                 height: ctrl.panel.height,
                                 legend: ctrl.panel.legend.show,
+                                fontColor: ctrl.panel.fontColor,
                                 position: ctrl.panel.legend.position,
                                 chartType: ctrl.panel.chartType,
                                 orientation: ctrl.panel.orientation,
+                                labelOrientation: ctrl.panel.labelOrientation,
                                 labelSpace: ctrl.panel.labelSpace,
+                                avgLineShow: ctrl.panel.avgLineShow,
                                 color: ctrl.panel.colorSch
                             });
 
