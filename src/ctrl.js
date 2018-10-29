@@ -341,6 +341,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                         : this.y(d.value) - this.height -8; 
                     })
                     .attr('dy', '.35em')
+                    .style('fill', `${this.fontColor}`)
                     .text(d => { return d.value; });
 
                 this.bar.on('mouseover', d => {
@@ -404,6 +405,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                             .attr('dx', 18)
                             .attr('dy', '1.1em')
                             .style('text-anchor', 'start')
+                            .style('fill', `${this.fontColor}`)
                             .text(d => { return d; });
                         break;
                     default:
