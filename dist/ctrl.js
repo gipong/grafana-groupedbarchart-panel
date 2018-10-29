@@ -388,7 +388,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                         return _this4.orientation === 'horizontal' ? _this4.x(d.value) + 5 : _this4.x1(d.name) + _this4.x1.rangeBand() / 4 + _this4.margin.left;
                                     }).attr('y', function (d) {
                                         return _this4.orientation === 'horizontal' ? _this4.y1(d.name) + _this4.y1.rangeBand() / 2 : _this4.y(d.value) - _this4.height - 8;
-                                    }).attr('dy', '.35em').text(function (d) {
+                                    }).attr('dy', '.35em').style('fill', '' + this.fontColor).text(function (d) {
                                         return d.value;
                                     });
 
@@ -439,7 +439,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
 
                                             this.legend.append('text').attr('x', function (d, i) {
                                                 return i * labelSpace + _this5.margin.left + _this5.width * 1 + 5;
-                                            }).attr('dx', 18).attr('dy', '1.1em').style('text-anchor', 'start').text(function (d) {
+                                            }).attr('dx', 18).attr('dy', '1.1em').style('text-anchor', 'start').style('fill', '' + this.fontColor).text(function (d) {
                                                 return d;
                                             });
                                             break;
