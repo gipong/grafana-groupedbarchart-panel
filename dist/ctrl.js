@@ -280,7 +280,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                             }, {
                                 key: 'addAxes',
                                 value: function addAxes() {
-                                    var axesScale = this.chartType === 'bar chart' ? 1 : 1.1;
+                                    var axesScale = 1.1;
                                     this.xAxis = d3.svg.axis().scale(this.axesConfig[0]).tickSize(-this.height).orient('bottom');
 
                                     this.yAxis = d3.svg.axis().scale(this.axesConfig[1]).orient('left');
@@ -290,18 +290,19 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                     }));
                                     this.axesConfig[3].domain(this.options).rangeRoundBands([0, this.axesConfig[2].rangeBand()]);
 
+                                    var chartScale = this.chartType === 'bar chart' ? 0 : 1;
                                     var domainCal = this.orientation === 'horizontal' ? [0, d3.max(this.data, function (d) {
                                         return d3.max(d.valores, function (d) {
-                                            return (d.value + d.stackVal) * axesScale;
+                                            return (d.value + chartScale * d.stackVal) * axesScale;
                                         });
                                     })] : [d3.max(this.data, function (d) {
                                         return d3.max(d.valores, function (d) {
-                                            return (d.value + d.stackVal) * axesScale;
+                                            return (d.value + chartScale * d.stackVal) * axesScale;
                                         });
                                     }), 0];
                                     this.axesConfig[4].domain(domainCal);
 
-                                    var xAxisConfig = this.svg.append('g').attr('class', 'x axis').attr('transform', 'translate(' + this.margin.left + ', ' + this.height + ')').call(this.xAxis).selectAll('text').style('fill', '' + this.fontColor);
+                                    var xAxisConfig = this.svg.append('g').attr('class', 'x axis').attr('transform', 'translate(' + this.margin.left + ', ' + (this.height + this.margin.top) + ')').call(this.xAxis).selectAll('text').style('fill', '' + this.fontColor);
 
                                     switch (this.labelOrientation) {
                                         case 'horizontal':
@@ -314,7 +315,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                             break;
                                     }
 
-                                    var yAxisConfig = this.svg.append('g').attr('class', 'y axis').attr('transform', 'translate(' + this.margin.left + ', 0)').style('fill', '' + this.fontColor).call(this.yAxis);
+                                    var yAxisConfig = this.svg.append('g').attr('class', 'y axis').attr('transform', 'translate(' + this.margin.left + ', ' + this.margin.top + ')').style('fill', '' + this.fontColor).call(this.yAxis);
 
                                     yAxisConfig.selectAll('text').style('fill', '' + this.fontColor);
                                     yAxisConfig.selectAll('path').style('stroke', '' + this.fontColor);
@@ -328,11 +329,11 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                     switch (this.orientation) {
                                         case 'horizontal':
                                             this.avgLineShow && this.options.forEach(function (d) {
-                                                _this4.svg.append('line').attr('x1', _this4.x(_this4.avgList[d])).attr('y1', _this4.height).attr('x2', _this4.x(_this4.avgList[d])).attr('y2', 0).attr('class', d + ' avgLine').attr('transform', 'translate(' + _this4.margin.left + ', 0)').style('display', 'none').style('stroke-width', 2).style('stroke', _this4.color(d)).style('stroke-opacity', 0.7);
+                                                _this4.svg.append('line').attr('x1', _this4.x(_this4.avgList[d])).attr('y1', _this4.height).attr('x2', _this4.x(_this4.avgList[d])).attr('y2', 0).attr('class', d + ' avgLine').attr('transform', 'translate(' + _this4.margin.left + ', ' + _this4.margin.top + ')').style('display', 'none').style('stroke-width', 2).style('stroke', _this4.color(d)).style('stroke-opacity', 0.7);
                                             });
 
                                             this.bar = this.svg.selectAll('.bar').data(this.data).enter().append('g').attr('class', 'rect').attr('transform', function (d) {
-                                                return 'translate(' + _this4.margin.left + ', ' + _this4.y0(d.label) + ')';
+                                                return 'translate(' + _this4.margin.left + ', ' + (_this4.y0(d.label) + _this4.margin.top) + ')';
                                             });
 
                                             this.barC = this.bar.selectAll('rect').data(function (d) {
@@ -354,11 +355,11 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                             break;
                                         case 'vertical':
                                             this.avgLineShow && this.options.forEach(function (d) {
-                                                _this4.svg.append('line').attr('x1', 0).attr('y1', _this4.y(_this4.avgList[d])).attr('x2', +_this4.width).attr('y2', _this4.y(_this4.avgList[d])).attr('class', d + ' avgLine').attr('transform', 'translate(' + _this4.margin.left + ', ' + 0 + ')').style('display', 'none').style('stroke-width', 2).style('stroke', _this4.color(d)).style('stroke-opacity', 0.7);
+                                                _this4.svg.append('line').attr('x1', 0).attr('y1', _this4.y(_this4.avgList[d])).attr('x2', +_this4.width).attr('y2', _this4.y(_this4.avgList[d])).attr('class', d + ' avgLine').attr('transform', 'translate(' + _this4.margin.left + ', ' + _this4.margin.top + ')').style('display', 'none').style('stroke-width', 2).style('stroke', _this4.color(d)).style('stroke-opacity', 0.7);
                                             });
 
                                             this.bar = this.svg.selectAll('.bar').data(this.data).enter().append('g').attr('class', 'rect').attr('transform', function (d, i) {
-                                                return 'translate(' + _this4.x0(d.label) + ', ' + +_this4.height + ')';
+                                                return 'translate(' + _this4.x0(d.label) + ', ' + (+_this4.height + _this4.margin.top) + ')';
                                             });
 
                                             this.barC = this.bar.selectAll('rect').data(function (d) {
@@ -389,7 +390,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                     }).attr('y', function (d) {
                                         return _this4.orientation === 'horizontal' ? _this4.y1(d.name) + _this4.y1.rangeBand() / 2 : _this4.y(d.value) - _this4.height - 8;
                                     }).attr('dy', '.35em').style('fill', '' + this.fontColor).text(function (d) {
-                                        return d.value;
+                                        return d.value ? d.value : '';
                                     });
 
                                     this.bar.on('mouseover', function (d) {
@@ -419,7 +420,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                         case 'On graph':
                                             var defaultOptions = this.chartType == 'bar chart' || this.orientation == 'horizontal' ? this.options.slice() : this.options.slice().reverse();
                                             this.legend = this.svg.selectAll('.legend').data(defaultOptions).enter().append('g').attr('class', 'legend').attr('transform', function (d, i) {
-                                                return 'translate(50,' + i * 20 + ')';
+                                                return 'translate(50,' + (i * 20 + _this5.margin.top) + ')';
                                             });
 
                                             this.legend.append('rect').attr('x', this.width * 1.1 - 18).attr('width', 18).attr('height', 18).style('fill', this.color);
@@ -430,7 +431,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                             break;
                                         case 'Under graph':
                                             this.legend = this.svg.selectAll('.legend').data(this.options.slice()).enter().append('g').attr('class', 'legend').attr('transform', function (d, i) {
-                                                return 'translate(' + (+i * labelSpace - _this5.width) + ',' + (+_this5.height + 24) + ')';
+                                                return 'translate(' + (+i * labelSpace - _this5.width) + ',' + (+_this5.height + 24 + _this5.margin.top) + ')';
                                             });
 
                                             this.legend.append('rect').attr('x', function (d, i) {
@@ -461,7 +462,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                             if (!ctrl.data) return;
                             var Chart = new groupedBarChart({
                                 data: ctrl.data,
-                                margin: { top: 10, left: 80, bottom: 10, right: 10 },
+                                margin: { top: 30, left: 80, bottom: 10, right: 10 },
                                 element: '#chart',
                                 width: ctrl.panel.width,
                                 height: ctrl.panel.height,
