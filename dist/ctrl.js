@@ -246,12 +246,15 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                 value: function draw() {
                                     d3.select(this.element).html("");
                                     this.svg = d3.select(this.element).append('svg');
-                                    this.svg.attr('width', this.width).attr('height', this.height).style('padding', '10px').attr('transform', 'translate(0, ' + this.margin.top + ')');
+                                    this.svg.attr('width', this.width).attr('height', this.height)
+                                    // .attr('viewBox', `0, 0, ${this.width}, ${this.height}`)
+                                    .attr('preserveAspectRatio', 'xMinYMin meet').style('padding', '10px').attr('transform', 'translate(0, ' + this.margin.top + ')');
 
                                     this.createScales();
                                     this.addAxes();
                                     this.addTooltips();
                                     this.addBar();
+                                    d3.select(this.element).attr('style', 'width: ' + this.width * 1.5 + 'px; height: ' + this.height * 1.5 + 'px');
                                     if (this.showLegend) this.addLegend(this.legendType);
                                 }
                             }, {

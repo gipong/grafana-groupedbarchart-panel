@@ -153,6 +153,8 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 this.svg = d3.select(this.element).append('svg');
                 this.svg.attr('width', this.width)
                     .attr('height', this.height)
+                    // .attr('viewBox', `0, 0, ${this.width}, ${this.height}`)
+                    .attr('preserveAspectRatio', 'xMinYMin meet')
                     .style('padding', '10px')
                     .attr('transform', `translate(0, ${this.margin.top})`);
 
@@ -160,6 +162,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 this.addAxes();
                 this.addTooltips();
                 this.addBar();
+                d3.select(this.element).attr('style', `width: ${this.width*1.5}px; height: ${this.height*1.5}px`);
                 if (this.showLegend) this.addLegend(this.legendType);
             }
 
