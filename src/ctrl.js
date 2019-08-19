@@ -122,13 +122,17 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 this.avgLineShow = opts.avgLineShow;
                 this.axesConfig = [];
                 this.element = elem.find(opts.element)[0];
-                this.options = d3.keys(this.data[0]).filter(function(key) { return key !== 'label'; });
+                this.options = [];
+                this.data.forEach(d => {
+                    this.options = this.options.concat(d3.keys(d));
+                });
+                this.options = _.uniq(this.options.filter(key => key !== 'label'));
                 this.avgList = {};
                 this.options.forEach(d => {this.avgList[d] = 0});
                 this.options = this.options.filter(d => d!=='valores');
                 this.data.forEach(d => {
                     let stackVal = 0;
-                    d.valores = this.options.map((name, i, o) => {
+                    d.valores = this.options.filter(k => k in d).map((name, i, o) => {
                         if (i !== 0) stackVal = stackVal + (+d[o[i-1]]);
                         this.avgList[name] = this.avgList[name] + d[name];
                         return {name: name, value: +d[name], stackVal: stackVal};
