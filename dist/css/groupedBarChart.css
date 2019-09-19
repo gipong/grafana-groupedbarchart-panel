@@ -3,8 +3,8 @@ svg {
     height: 100%;
     position: center;
 }
+
 .toolTip {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     position: absolute;
     display: none;
     width: auto;
@@ -14,34 +14,42 @@ svg {
     border: 0 none;
     border-radius: 8px 8px 8px 8px;
     color: black;
-    font: 14px sans-serif;
+    font: bold 14px "Helvetica Neue", Helvetica, Arial, sans-serif;
     padding: 10px;
     text-align: center;
 }
+
 .legend {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 60%;
 }
+
 text {
     font: 12px sans-serif;
     fill: #FFF;
 }
+
 .axis text {
     font: 12px sans-serif;
 }
-.axis path{
+
+.axis path {
     fill: none;
     stroke: #FFF;
 }
+
 .axis line {
     fill: none;
     stroke: #FFF;
     shape-rendering: crispEdges;
 }
+
 .axis .tick line {
     stroke-width: 1;
-    stroke: rgba(255, 255, 255, 0.2);
+    stroke-opacity: 0.2;
+    stroke: rgb(255, 255, 255);
 }
+
 .x.axis path {
     display: none;
 }
