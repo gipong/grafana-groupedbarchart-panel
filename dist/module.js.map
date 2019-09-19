@@ -1,1 +1,1 @@
-{"version":3,"sources":["../src/module.js"],"names":["GroupedBarChartCtrl"],"mappings":";;;;;;;;AAAQA,+B,SAAAA,mB;;;iCAGJA,mB","file":"module.js","sourcesContent":["import {GroupedBarChartCtrl} from './ctrl';\r\n\r\nexport {\r\n    GroupedBarChartCtrl as PanelCtrl\r\n};"]}
+{"version":3,"sources":["../src/module.js"],"names":["GroupedBarChartCtrl"],"mappings":";;;;;;;;AAAQA,+B,SAAAA,mB;;;iCAGJA,mB","file":"module.js","sourcesContent":["import {GroupedBarChartCtrl} from './ctrl';\n\nexport {\n    GroupedBarChartCtrl as PanelCtrl\n};"]}
