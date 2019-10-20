@@ -1,3 +1,5 @@
+import {getTheme, GrafanaThemeType} from "@grafana/ui";
+import {config} from '@grafana/runtime';
 import {MetricsPanelCtrl} from 'app/plugins/sdk';
 import _ from 'lodash';
 import kbn from 'app/core/utils/kbn';
@@ -27,12 +29,14 @@ const panelDefaults = {
     valueName: 'current',
     strokeWidth: 1,
     fontSize: '80%',
-    fontColor: '#fff',
     width: 800,
     height: 400,
     colorSet: [],
     colorSch: []
 };
+
+const getCurrentThemeName = () => config.bootData.user.lightTheme ? GrafanaThemeType.Light : GrafanaThemeType.Dark;
+const getCurrentTheme = () => getTheme(getCurrentThemeName());
 
 export class GroupedBarChartCtrl extends MetricsPanelCtrl {
 
@@ -92,7 +96,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 {label:"Machine004", "Off":15, "Down":30, "Run":80, "Idle":15}
             ];
         }
-        
+
         this.render();
     }
 
@@ -117,7 +121,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 this.chartType = opts.chartType;
                 this.orientation = opts.orientation;
                 this.labelSpace = opts.labelSpace;
-                this.fontColor = opts.fontColor;
+                this.grafanaTheme = getCurrentTheme();
                 this.labelOrientation = opts.labelOrientation;
                 this.avgLineShow = opts.avgLineShow;
                 this.axesConfig = [];
@@ -190,7 +194,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
 
                         this.y = d3.scale.linear()
                             .range([0, +this.height]);
-                        
+
                         this.axesConfig = [this.x0, this.y, this.x0, this.x1, this.y];
                         break;
                 }
@@ -212,7 +216,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 this.axesConfig[3].domain(this.options).rangeRoundBands([0, this.axesConfig[2].rangeBand()]);
 
                 let chartScale = (this.chartType === 'bar chart') ? 0 : 1;
-                let domainCal = (this.orientation === 'horizontal') 
+                let domainCal = (this.orientation === 'horizontal')
                     ? [0, d3.max(this.data, function(d) { return d3.max(d.valores, d => { return (d.value + chartScale*d.stackVal)*axesScale; }); })]
                     : [d3.max(this.data, function(d) { return d3.max(d.valores, d => { return (d.value + chartScale*d.stackVal)*axesScale; }); }), 0];
                 this.axesConfig[4].domain(domainCal);
@@ -222,7 +226,10 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                     .attr('transform', `translate(${this.margin.left}, ${this.height + this.margin.top})`)
                     .call(this.xAxis)
                     .selectAll('text')
-                    .style('fill', `${this.fontColor}`)
+                    .style('fill', `${this.grafanaTheme.colors.text}`);
+
+                xAxisConfig.selectAll('.tick line')
+                    .style('stroke', `${this.grafanaTheme.colors.text}`);
 
                 switch(this.labelOrientation) {
                     case 'horizontal':
@@ -240,14 +247,16 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 let yAxisConfig = this.svg.append('g')
                     .attr('class', 'y axis')
                     .attr('transform', `translate(${this.margin.left}, ${this.margin.top})`)
-                    .style('fill', `${this.fontColor}`)
-                    .call(this.yAxis)
+                    .style('fill', 'none')
+                    .call(this.yAxis);
 
                 yAxisConfig.selectAll('text')
-                    .style('fill', `${this.fontColor}`);
+                    .style('fill', `${this.grafanaTheme.colors.text}`);
                 yAxisConfig.selectAll('path')
-                    .style('stroke', `${this.fontColor}`);
-                
+                    .style('stroke', `${this.grafanaTheme.colors.text}`);
+                yAxisConfig.selectAll('.tick line')
+                    .style('stroke', `${this.grafanaTheme.colors.text}`);
+
             }
 
             addBar() {
@@ -280,13 +289,12 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                             .data(d => { return d.valores; })
                             .enter();
 
-                        
                         this.barC.append('rect')
                             .attr('height', this.y1.rangeBand()*scale)
-                            .attr('y', d => { 
+                            .attr('y', d => {
                                 return (this.chartType === 'bar chart') ? this.y1(d.name) : this.y0(d.label);
                             })
-                            .attr('x', d => { 
+                            .attr('x', d => {
                                 return (this.chartType === 'bar chart') ? 0 : this.x(d.stackVal);
                             })
                             .attr('value', d => { return d.name;})
@@ -324,10 +332,10 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                         this.barC.append('rect')
                             .attr('id', (d, i) => { return `${d.label}_${i}`;})
                             .attr('height', d => { return +this.height - this.y(d.value);})
-                            .attr('y', d => { 
+                            .attr('y', d => {
                                 return (this.chartType === 'bar chart') ? this.y(d.value) - this.height :  (this.y(d.value) - 2*(+this.height) + this.y(d.stackVal));
                             })
-                            .attr('x', (d, i) => { 
+                            .attr('x', (d, i) => {
                                 return (this.chartType === 'bar chart') ? this.x1(d.name) + this.margin.left : this.x1(d.name) - this.x1.rangeBand()*i + this.margin.left;
                             })
                             .attr('value', d => { return d.name;})
@@ -338,18 +346,18 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 }
 
                 (this.chartType === 'bar chart') && this.barC.append('text')
-                    .attr('x', d => { 
-                        return (this.orientation === 'horizontal') 
+                    .attr('x', d => {
+                        return (this.orientation === 'horizontal')
                         ? this.x(d.value) +5
-                        : this.x1(d.name) + this.x1.rangeBand()/4 + this.margin.left;  
+                        : this.x1(d.name) + this.x1.rangeBand()/4 + this.margin.left;
                     })
-                    .attr('y', d => { 
+                    .attr('y', d => {
                         return (this.orientation === 'horizontal')
                         ? this.y1(d.name) +(this.y1.rangeBand()/2)
-                        : this.y(d.value) - this.height -8; 
+                        : this.y(d.value) - this.height -8;
                     })
                     .attr('dy', '.35em')
-                    .style('fill', `${this.fontColor}`)
+                    .style('fill', `${this.grafanaTheme.colors.text}`)
                     .text(d => { return d.value ? d.value : ''; });
 
                 this.bar.on('mouseover', d => {
@@ -359,7 +367,9 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                     let elements = d3.selectAll(':hover')[0];
                     let elementData = elements[elements.length-1].__data__;
                     this.tips.html(`${d.label} , ${elementData.name} ,  ${elementData.value}`);
-                    if (this.avgLineShow) d3.selectAll(`.${elementData.name}`)[0][0].style.display = '';
+                    if (this.avgLineShow) {
+                        d3.selectAll(`.${elementData.name}`)[0][0].style.display = '';
+                    }
                 });
 
                 this.bar.on('mouseout', d => {
@@ -392,7 +402,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                             .attr('y', 9)
                             .attr('dy', '.35em')
                             .style('text-anchor', 'end')
-                            .style('fill', `${this.fontColor}`)
+                            .style('fill', `${this.grafanaTheme.colors.text}`)
                             .text(d => { return d; });
                         break;
                     case 'Under graph':
@@ -413,7 +423,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                             .attr('dx', 18)
                             .attr('dy', '1.1em')
                             .style('text-anchor', 'start')
-                            .style('fill', `${this.fontColor}`)
+                            .style('fill', `${this.grafanaTheme.colors.text}`)
                             .text(d => { return d; });
                         break;
                     default:
@@ -423,7 +433,9 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
 
             addTooltips() {
                 this.tips = d3.select(this.element).append('div')
-                    .attr('class', 'toolTip');
+                    .attr('class', 'toolTip')
+                    .style('background', this.grafanaTheme.background.scrollbar)
+                    .style('color', this.grafanaTheme.colors.textEmphasis);
             }
         }
 
@@ -436,7 +448,6 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 width: ctrl.panel.width,
                 height: ctrl.panel.height,
                 legend: ctrl.panel.legend.show,
-                fontColor: ctrl.panel.fontColor,
                 position: ctrl.panel.legend.position,
                 chartType: ctrl.panel.chartType,
                 orientation: ctrl.panel.orientation,
