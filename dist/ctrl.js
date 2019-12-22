@@ -1,9 +1,9 @@
 'use strict';
 
-System.register(['@grafana/ui', '@grafana/runtime', 'app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/time_series', './external/d3.v3.min', './css/groupedBarChart.css!'], function (_export, _context) {
+System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/time_series', './external/d3.v3.min', './css/groupedBarChart.css!'], function (_export, _context) {
     "use strict";
 
-    var getTheme, GrafanaThemeType, config, MetricsPanelCtrl, _, kbn, TimeSeries, d3, _createClass, panelDefaults, getCurrentThemeName, getCurrentTheme, GroupedBarChartCtrl;
+    var MetricsPanelCtrl, _, kbn, TimeSeries, d3, _createClass, panelDefaults, GroupedBarChartCtrl;
 
     function _classCallCheck(instance, Constructor) {
         if (!(instance instanceof Constructor)) {
@@ -36,12 +36,7 @@ System.register(['@grafana/ui', '@grafana/runtime', 'app/plugins/sdk', 'lodash',
     }
 
     return {
-        setters: [function (_grafanaUi) {
-            getTheme = _grafanaUi.getTheme;
-            GrafanaThemeType = _grafanaUi.GrafanaThemeType;
-        }, function (_grafanaRuntime) {
-            config = _grafanaRuntime.config;
-        }, function (_appPluginsSdk) {
+        setters: [function (_appPluginsSdk) {
             MetricsPanelCtrl = _appPluginsSdk.MetricsPanelCtrl;
         }, function (_lodash) {
             _ = _lodash.default;
@@ -93,18 +88,11 @@ System.register(['@grafana/ui', '@grafana/runtime', 'app/plugins/sdk', 'lodash',
                 valueName: 'current',
                 strokeWidth: 1,
                 fontSize: '80%',
+                fontColor: '#fff',
                 width: 800,
                 height: 400,
                 colorSet: [],
                 colorSch: []
-            };
-
-            getCurrentThemeName = function getCurrentThemeName() {
-                return config.bootData.user.lightTheme ? GrafanaThemeType.Light : GrafanaThemeType.Dark;
-            };
-
-            getCurrentTheme = function getCurrentTheme() {
-                return getTheme(getCurrentThemeName());
             };
 
             _export('GroupedBarChartCtrl', GroupedBarChartCtrl = function (_MetricsPanelCtrl) {
@@ -218,18 +206,14 @@ System.register(['@grafana/ui', '@grafana/runtime', 'app/plugins/sdk', 'lodash',
                                 this.chartType = opts.chartType;
                                 this.orientation = opts.orientation;
                                 this.labelSpace = opts.labelSpace;
-                                this.grafanaTheme = getCurrentTheme();
+                                this.fontColor = opts.fontColor;
                                 this.labelOrientation = opts.labelOrientation;
                                 this.avgLineShow = opts.avgLineShow;
                                 this.axesConfig = [];
                                 this.element = elem.find(opts.element)[0];
-                                this.options = [];
-                                this.data.forEach(function (d) {
-                                    _this3.options = _this3.options.concat(d3.keys(d));
-                                });
-                                this.options = _.uniq(this.options.filter(function (key) {
+                                this.options = d3.keys(this.data[0]).filter(function (key) {
                                     return key !== 'label';
-                                }));
+                                });
                                 this.avgList = {};
                                 this.options.forEach(function (d) {
                                     _this3.avgList[d] = 0;
@@ -239,9 +223,7 @@ System.register(['@grafana/ui', '@grafana/runtime', 'app/plugins/sdk', 'lodash',
                                 });
                                 this.data.forEach(function (d) {
                                     var stackVal = 0;
-                                    d.valores = _this3.options.filter(function (k) {
-                                        return k in d;
-                                    }).map(function (name, i, o) {
+                                    d.valores = _this3.options.map(function (name, i, o) {
                                         if (i !== 0) stackVal = stackVal + +d[o[i - 1]];
                                         _this3.avgList[name] = _this3.avgList[name] + d[name];
                                         return { name: name, value: +d[name], stackVal: stackVal };
@@ -323,9 +305,7 @@ System.register(['@grafana/ui', '@grafana/runtime', 'app/plugins/sdk', 'lodash',
                                     }), 0];
                                     this.axesConfig[4].domain(domainCal);
 
-                                    var xAxisConfig = this.svg.append('g').attr('class', 'x axis').attr('transform', 'translate(' + this.margin.left + ', ' + (this.height + this.margin.top) + ')').call(this.xAxis).selectAll('text').style('fill', '' + this.grafanaTheme.colors.text);
-
-                                    xAxisConfig.selectAll('.tick line').style('stroke', '' + this.grafanaTheme.colors.text);
+                                    var xAxisConfig = this.svg.append('g').attr('class', 'x axis').attr('transform', 'translate(' + this.margin.left + ', ' + (this.height + this.margin.top) + ')').call(this.xAxis).selectAll('text').style('fill', '' + this.fontColor);
 
                                     switch (this.labelOrientation) {
                                         case 'horizontal':
@@ -338,11 +318,10 @@ System.register(['@grafana/ui', '@grafana/runtime', 'app/plugins/sdk', 'lodash',
                                             break;
                                     }
 
-                                    var yAxisConfig = this.svg.append('g').attr('class', 'y axis').attr('transform', 'translate(' + this.margin.left + ', ' + this.margin.top + ')').style('fill', 'none').call(this.yAxis);
+                                    var yAxisConfig = this.svg.append('g').attr('class', 'y axis').attr('transform', 'translate(' + this.margin.left + ', ' + this.margin.top + ')').style('fill', '' + this.fontColor).call(this.yAxis);
 
-                                    yAxisConfig.selectAll('text').style('fill', '' + this.grafanaTheme.colors.text);
-                                    yAxisConfig.selectAll('path').style('stroke', '' + this.grafanaTheme.colors.text);
-                                    yAxisConfig.selectAll('.tick line').style('stroke', '' + this.grafanaTheme.colors.text);
+                                    yAxisConfig.selectAll('text').style('fill', '' + this.fontColor);
+                                    yAxisConfig.selectAll('path').style('stroke', '' + this.fontColor);
                                 }
                             }, {
                                 key: 'addBar',
@@ -413,7 +392,7 @@ System.register(['@grafana/ui', '@grafana/runtime', 'app/plugins/sdk', 'lodash',
                                         return _this4.orientation === 'horizontal' ? _this4.x(d.value) + 5 : _this4.x1(d.name) + _this4.x1.rangeBand() / 4 + _this4.margin.left;
                                     }).attr('y', function (d) {
                                         return _this4.orientation === 'horizontal' ? _this4.y1(d.name) + _this4.y1.rangeBand() / 2 : _this4.y(d.value) - _this4.height - 8;
-                                    }).attr('dy', '.35em').style('fill', '' + this.grafanaTheme.colors.text).text(function (d) {
+                                    }).attr('dy', '.35em').style('fill', '' + this.fontColor).text(function (d) {
                                         return d.value ? d.value : '';
                                     });
 
@@ -424,9 +403,7 @@ System.register(['@grafana/ui', '@grafana/runtime', 'app/plugins/sdk', 'lodash',
                                         var elements = d3.selectAll(':hover')[0];
                                         var elementData = elements[elements.length - 1].__data__;
                                         _this4.tips.html(d.label + ' , ' + elementData.name + ' ,  ' + elementData.value);
-                                        if (_this4.avgLineShow) {
-                                            d3.selectAll('.' + elementData.name)[0][0].style.display = '';
-                                        }
+                                        if (_this4.avgLineShow) d3.selectAll('.' + elementData.name)[0][0].style.display = '';
                                     });
 
                                     this.bar.on('mouseout', function (d) {
@@ -451,7 +428,7 @@ System.register(['@grafana/ui', '@grafana/runtime', 'app/plugins/sdk', 'lodash',
 
                                             this.legend.append('rect').attr('x', this.width * 1.1 - 18).attr('width', 18).attr('height', 18).style('fill', this.color);
 
-                                            this.legend.append('text').attr('x', this.width * 1.1 - 24).attr('y', 9).attr('dy', '.35em').style('text-anchor', 'end').style('fill', '' + this.grafanaTheme.colors.text).text(function (d) {
+                                            this.legend.append('text').attr('x', this.width * 1.1 - 24).attr('y', 9).attr('dy', '.35em').style('text-anchor', 'end').style('fill', '' + this.fontColor).text(function (d) {
                                                 return d;
                                             });
                                             break;
@@ -466,7 +443,7 @@ System.register(['@grafana/ui', '@grafana/runtime', 'app/plugins/sdk', 'lodash',
 
                                             this.legend.append('text').attr('x', function (d, i) {
                                                 return i * labelSpace + _this5.margin.left + _this5.width * 1 + 5;
-                                            }).attr('dx', 18).attr('dy', '1.1em').style('text-anchor', 'start').style('fill', '' + this.grafanaTheme.colors.text).text(function (d) {
+                                            }).attr('dx', 18).attr('dy', '1.1em').style('text-anchor', 'start').style('fill', '' + this.fontColor).text(function (d) {
                                                 return d;
                                             });
                                             break;
@@ -477,7 +454,7 @@ System.register(['@grafana/ui', '@grafana/runtime', 'app/plugins/sdk', 'lodash',
                             }, {
                                 key: 'addTooltips',
                                 value: function addTooltips() {
-                                    this.tips = d3.select(this.element).append('div').attr('class', 'toolTip').style('background', this.grafanaTheme.background.scrollbar).style('color', this.grafanaTheme.colors.textEmphasis);
+                                    this.tips = d3.select(this.element).append('div').attr('class', 'toolTip');
                                 }
                             }]);
 
@@ -493,6 +470,7 @@ System.register(['@grafana/ui', '@grafana/runtime', 'app/plugins/sdk', 'lodash',
                                 width: ctrl.panel.width,
                                 height: ctrl.panel.height,
                                 legend: ctrl.panel.legend.show,
+                                fontColor: ctrl.panel.fontColor,
                                 position: ctrl.panel.legend.position,
                                 chartType: ctrl.panel.chartType,
                                 orientation: ctrl.panel.orientation,

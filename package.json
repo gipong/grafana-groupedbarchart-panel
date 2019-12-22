@@ -10,7 +10,6 @@
   "author": "gipong",
   "license": "MIT",
   "devDependencies": {
-    "@grafana/ui": "^6.3.2",
     "babel": "~6.5.1",
     "babel-plugin-transform-es2015-modules-systemjs": "^6.24.1",
     "grunt": "~0.4.5",
@@ -25,7 +24,6 @@
     "load-grunt-tasks": "~3.2.0"
   },
   "dependencies": {
-    "@grafana/runtime": "^6.3.2",
     "babel-cli": "^6.26.0",
     "babel-plugin-transform-es2015-for-of": "^6.5.0",
     "babel-preset-es2015": "^6.24.1",
