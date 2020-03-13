@@ -110,8 +110,8 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
             constructor(opts) {
                 this.data = opts.data;
                 this.margin = opts.margin;
-                this.width = opts.width;
-                this.height = opts.height;
+                this.width = parseInt(opts.width, 10);
+                this.height = parseInt(opts.height, 10);
                 this.showLegend = opts.legend;
                 this.legendType = opts.position;
                 this.chartType = opts.chartType;
