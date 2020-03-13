@@ -83,7 +83,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 e.label = i;
                 res.push(e);
             });
-            this.data = res.sort((a, b) => {return (a.label>b.label)?-1:((b.label>a.label)?1:0)});
+            this.data = res;//.sort((a, b) => {return (a.label>b.label)?-1:((b.label>a.label)?1:0)});
         } else {
             this.data = [
                 {label:"Machine001", "Off":15, "Down":50, "Run": 0, "Idle":40},
