@@ -14,6 +14,7 @@ const panelDefaults = {
     labelOrientation: 'horizontal',
     orientation: 'vertical',
     avgLineShow: true,
+    barValuesShow: true,
     labelSpace: 40,
     links: [],
     datasource: null,
@@ -120,6 +121,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 this.fontColor = opts.fontColor;
                 this.labelOrientation = opts.labelOrientation;
                 this.avgLineShow = opts.avgLineShow;
+                this.barValuesShow = opts.barValuesShow;
                 this.axesConfig = [];
                 this.element = elem.find(opts.element)[0];
                 this.options = [];
@@ -337,20 +339,22 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                         break;
                 }
 
-                (this.chartType === 'bar chart') && this.barC.append('text')
-                    .attr('x', d => { 
-                        return (this.orientation === 'horizontal') 
-                        ? this.x(d.value) +5
-                        : this.x1(d.name) + this.x1.rangeBand()/4 + this.margin.left;  
-                    })
-                    .attr('y', d => { 
-                        return (this.orientation === 'horizontal')
-                        ? this.y1(d.name) +(this.y1.rangeBand()/2)
-                        : this.y(d.value) - this.height -8; 
-                    })
-                    .attr('dy', '.35em')
-                    .style('fill', `${this.fontColor}`)
-                    .text(d => { return d.value ? d.value : ''; });
+                if(this.barValuesShow) {
+                    (this.chartType === 'bar chart') && this.barC.append('text')
+                        .attr('x', d => { 
+                            return (this.orientation === 'horizontal') 
+                            ? this.x(d.value) +5
+                            : this.x1(d.name) + this.x1.rangeBand()/4 + this.margin.left;  
+                        })
+                        .attr('y', d => { 
+                            return (this.orientation === 'horizontal')
+                            ? this.y1(d.name) +(this.y1.rangeBand()/2)
+                            : this.y(d.value) - this.height -8; 
+                        })
+                        .attr('dy', '.35em')
+                        .style('fill', `${this.fontColor}`)
+                        .text(d => { return d.value ? d.value : ''; });
+                }
 
                 this.bar.on('mouseover', d => {
                     this.tips.style('left', `${10}px`);
