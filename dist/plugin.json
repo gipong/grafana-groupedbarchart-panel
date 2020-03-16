@@ -23,7 +23,7 @@
       {"name": "options", "path": "src/img/groupedbarchart-options.png"},
       {"name": "colors", "path": "src/img/groupedbarchart-colors.png"}
     ],
-    "version": "1.0.0",
+    "version": "1.0.1",
     "updated": "2017-12-23"
   },
 
