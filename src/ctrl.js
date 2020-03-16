@@ -447,6 +447,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 labelOrientation: ctrl.panel.labelOrientation,
                 labelSpace: ctrl.panel.labelSpace,
                 avgLineShow: ctrl.panel.avgLineShow,
+                barValuesShow: ctrl.panel.barValuesShow,
                 color: ctrl.panel.colorSch
             });
 
