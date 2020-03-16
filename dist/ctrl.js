@@ -169,9 +169,9 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                 e.label = i;
                                 res.push(e);
                             });
-                            this.data = res.sort(function (a, b) {
-                                return a.label > b.label ? -1 : b.label > a.label ? 1 : 0;
-                            });
+                            this.data = res;//.sort(function (a, b) {
+                                //return a.label > b.label ? -1 : b.label > a.label ? 1 : 0;
+                            //});
                         } else {
                             this.data = [{ label: "Machine001", "Off": 15, "Down": 50, "Run": 0, "Idle": 40 }, { label: "Machine002", "Off": 15, "Down": 5, "Run": 40, "Idle": 15 }, { label: "Machine003", "Off": 15, "Down": 30, "Run": 40, "Idle": 15 }, { label: "Machine004", "Off": 15, "Down": 30, "Run": 80, "Idle": 15 }];
                         }
@@ -199,8 +199,8 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
 
                                 this.data = opts.data;
                                 this.margin = opts.margin;
-                                this.width = opts.width;
-                                this.height = opts.height;
+                                this.width = parseInt(opts.width, 10);
+                                this.height = parseInt(opts.height, 10);
                                 this.showLegend = opts.legend;
                                 this.legendType = opts.position;
                                 this.chartType = opts.chartType;
