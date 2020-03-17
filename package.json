@@ -1,11 +1,11 @@
 {
   "name": "groupedbarchart-panel",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jceddy/grafana-groupedbarchart-panel.git"
+    "url": "https://github.com/gipong/grafana-groupedbarchart-panel.git"
   },
   "author": "gipong",
   "license": "MIT",

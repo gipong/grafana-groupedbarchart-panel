@@ -75,6 +75,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                 labelOrientation: 'horizontal',
                 orientation: 'vertical',
                 avgLineShow: true,
+                barValuesShow: true,
                 labelSpace: 40,
                 links: [],
                 datasource: null,
@@ -169,9 +170,9 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                 e.label = i;
                                 res.push(e);
                             });
-                            this.data = res.sort(function (a, b) {
-                                return a.label > b.label ? -1 : b.label > a.label ? 1 : 0;
-                            });
+                            this.data = res;//.sort(function (a, b) {
+                                //return a.label > b.label ? -1 : b.label > a.label ? 1 : 0;
+                            //});
                         } else {
                             this.data = [{ label: "Machine001", "Off": 15, "Down": 50, "Run": 0, "Idle": 40 }, { label: "Machine002", "Off": 15, "Down": 5, "Run": 40, "Idle": 15 }, { label: "Machine003", "Off": 15, "Down": 30, "Run": 40, "Idle": 15 }, { label: "Machine004", "Off": 15, "Down": 30, "Run": 80, "Idle": 15 }];
                         }
@@ -199,8 +200,8 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
 
                                 this.data = opts.data;
                                 this.margin = opts.margin;
-                                this.width = opts.width;
-                                this.height = opts.height;
+                                this.width = parseInt(opts.width, 10);
+                                this.height = parseInt(opts.height, 10);
                                 this.showLegend = opts.legend;
                                 this.legendType = opts.position;
                                 this.chartType = opts.chartType;
@@ -209,6 +210,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                 this.fontColor = opts.fontColor;
                                 this.labelOrientation = opts.labelOrientation;
                                 this.avgLineShow = opts.avgLineShow;
+                                this.barValuesShow = opts.barValuesShow;
                                 this.axesConfig = [];
                                 this.element = elem.find(opts.element)[0];
                                 this.options = d3.keys(this.data[0]).filter(function (key) {
@@ -388,13 +390,15 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                             break;
                                     }
 
-                                    this.chartType === 'bar chart' && this.barC.append('text').attr('x', function (d) {
-                                        return _this4.orientation === 'horizontal' ? _this4.x(d.value) + 5 : _this4.x1(d.name) + _this4.x1.rangeBand() / 4 + _this4.margin.left;
-                                    }).attr('y', function (d) {
-                                        return _this4.orientation === 'horizontal' ? _this4.y1(d.name) + _this4.y1.rangeBand() / 2 : _this4.y(d.value) - _this4.height - 8;
-                                    }).attr('dy', '.35em').style('fill', '' + this.fontColor).text(function (d) {
-                                        return d.value ? d.value : '';
-                                    });
+                                    if(this.barValuesShow) {
+                                        this.chartType === 'bar chart' && this.barC.append('text').attr('x', function (d) {
+                                            return _this4.orientation === 'horizontal' ? _this4.x(d.value) + 5 : _this4.x1(d.name) + _this4.x1.rangeBand() / 4 + _this4.margin.left;
+                                        }).attr('y', function (d) {
+                                            return _this4.orientation === 'horizontal' ? _this4.y1(d.name) + _this4.y1.rangeBand() / 2 : _this4.y(d.value) - _this4.height - 8;
+                                        }).attr('dy', '.35em').style('fill', '' + this.fontColor).text(function (d) {
+                                            return d.value ? d.value : '';
+                                        });
+                                    }
 
                                     this.bar.on('mouseover', function (d) {
                                         _this4.tips.style('left', 10 + 'px');
@@ -477,6 +481,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                 labelOrientation: ctrl.panel.labelOrientation,
                                 labelSpace: ctrl.panel.labelSpace,
                                 avgLineShow: ctrl.panel.avgLineShow,
+                                barValuesShow: ctrl.panel.barValuesShow,
                                 color: ctrl.panel.colorSch
                             });
 
