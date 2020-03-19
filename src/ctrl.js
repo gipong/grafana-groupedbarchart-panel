@@ -107,15 +107,6 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
         }
         return value;
     }
-    
-    applyValueFormat(value) {
-        if(this.valueFormat != '') {
-            return numeral(value).format(this.valueFormat);
-        }
-        else {
-            return value;
-        }
-    }
 
     link(scope, elem, attrs, ctrl) {
         class groupedBarChart {
@@ -164,6 +155,15 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 }
 
                 this.draw();
+            }
+            
+            applyValueFormat(value) {
+                if(this.valueFormat != '') {
+                    return numeral(value).format(this.valueFormat);
+                }
+                else {
+                    return value;
+                }
             }
 
             draw() {
