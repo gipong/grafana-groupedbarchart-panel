@@ -23,8 +23,8 @@
       {"name": "options", "path": "src/img/groupedbarchart-options.png"},
       {"name": "colors", "path": "src/img/groupedbarchart-colors.png"}
     ],
-    "version": "1.0.3",
-    "updated": "2020-03-16"
+    "version": "1.0.4",
+    "updated": "2020-03-19"
   },
 
   "dependencies": {
