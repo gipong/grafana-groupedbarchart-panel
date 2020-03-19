@@ -300,7 +300,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                     var axesScale = 1.1;
                                     this.xAxis = d3.svg.axis().scale(this.axesConfig[0]).tickSize(-this.height).orient('bottom');
 
-                                    this.yAxis = d3.svg.axis().scale(this.axesConfig[1]).orient('left').tickFormat(d => this.applyValueFormat(d);
+                                    this.yAxis = d3.svg.axis().scale(this.axesConfig[1]).orient('left').tickFormat(d => this.applyValueFormat(d));
 
                                     this.axesConfig[2].domain(this.data.map(function (d) {
                                         return d.label;
