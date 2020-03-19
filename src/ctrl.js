@@ -3,7 +3,7 @@ import _ from 'lodash';
 import kbn from 'app/core/utils/kbn';
 import TimeSeries from 'app/core/time_series';
 import * as d3 from './external/d3.v3.min';
-import './external/numeral.min.js';
+import * as numeral from './external/numeral.min.js';
 import './css/groupedBarChart.css!';
 
 const panelDefaults = {
