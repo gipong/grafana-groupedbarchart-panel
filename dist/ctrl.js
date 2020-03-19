@@ -191,16 +191,6 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                         return value;
                     }
                 }, {
-                    key: 'applyValueFormat',
-                    value: function applyValueFormat(value) {
-                        if(this.valueFormat != '') {
-                            return numeral(value).format(this.valueFormat);
-                        }
-                        else {
-                            return value;
-                        }
-                    }
-                }, {
                     key: 'link',
                     value: function link(scope, elem, attrs, ctrl) {
                         var groupedBarChart = function () {
@@ -256,6 +246,16 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                             }
 
                             _createClass(groupedBarChart, [{
+                                key: 'applyValueFormat',
+                                value: function applyValueFormat(value) {
+                                    if(this.valueFormat != '') {
+                                        return numeral(value).format(this.valueFormat);
+                                    }
+                                    else {
+                                        return value;
+                                    }
+                                }
+                            }, {
                                 key: 'draw',
                                 value: function draw() {
                                     d3.select(this.element).html("");
