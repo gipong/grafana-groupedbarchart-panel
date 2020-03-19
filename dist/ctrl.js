@@ -418,7 +418,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                         _this4.tips.style('display', "inline-block");
                                         var elements = d3.selectAll(':hover')[0];
                                         var elementData = elements[elements.length - 1].__data__;
-                                        _this4.tips.html(d.label + ' , ' + elementData.name + ' ,  ' + this.applyValueFormat(elementData.value));
+                                        _this4.tips.html(d.label + ' , ' + elementData.name + ' ,  ' + _this4.applyValueFormat(elementData.value));
                                         if (_this4.avgLineShow) d3.selectAll('.' + elementData.name)[0][0].style.display = '';
                                     });
 
