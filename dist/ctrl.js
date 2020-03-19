@@ -3,7 +3,7 @@
 System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/time_series', './external/d3.v3.min', './external/numeral.min.js', './css/groupedBarChart.css!'], function (_export, _context) {
     "use strict";
 
-    var MetricsPanelCtrl, _, kbn, TimeSeries, d3, _createClass, panelDefaults, GroupedBarChartCtrl;
+    var MetricsPanelCtrl, _, kbn, TimeSeries, d3, numeral, _createClass, panelDefaults, GroupedBarChartCtrl;
 
     function _classCallCheck(instance, Constructor) {
         if (!(instance instanceof Constructor)) {
@@ -46,6 +46,8 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
             TimeSeries = _appCoreTime_series.default;
         }, function (_externalD3V3Min) {
             d3 = _externalD3V3Min;
+        }, function (_externalNumeralMin) {
+            numeral = _externalNumeralMin;
         }, function (_cssGroupedBarChartCss) {}],
         execute: function () {
             _createClass = function () {
