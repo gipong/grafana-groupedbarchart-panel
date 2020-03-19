@@ -3,6 +3,7 @@ import _ from 'lodash';
 import kbn from 'app/core/utils/kbn';
 import TimeSeries from 'app/core/time_series';
 import * as d3 from './external/d3.v3.min';
+import './external/numeral.min.js';
 import './css/groupedBarChart.css!';
 
 const panelDefaults = {
@@ -31,6 +32,7 @@ const panelDefaults = {
     fontColor: '#fff',
     width: 800,
     height: 400,
+    valueFormat: '',
     colorSet: [],
     colorSch: []
 };
@@ -105,6 +107,15 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
         }
         return value;
     }
+    
+    applyValueFormat(value) {
+        if(this.valueFormat != '') {
+            return numeral(value).format(this.valueFormat);
+        }
+        else {
+            return value;
+        }
+    }
 
     link(scope, elem, attrs, ctrl) {
         class groupedBarChart {
@@ -113,6 +124,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 this.margin = opts.margin;
                 this.width = parseInt(opts.width, 10);
                 this.height = parseInt(opts.height, 10);
+                this.valueFormat = opts.valueFormat,
                 this.showLegend = opts.legend;
                 this.legendType = opts.position;
                 this.chartType = opts.chartType;
@@ -208,7 +220,8 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
 
                 this.yAxis = d3.svg.axis()
                     .scale(this.axesConfig[1])
-                    .orient('left');
+                    .orient('left').
+                    .tickFormat(d => this.applyValueFormat(d));
 
                 this.axesConfig[2].domain(this.data.map(d => { return d.label; }));
                 this.axesConfig[3].domain(this.options).rangeRoundBands([0, this.axesConfig[2].rangeBand()]);
@@ -353,7 +366,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                         })
                         .attr('dy', '.35em')
                         .style('fill', `${this.fontColor}`)
-                        .text(d => { return d.value ? d.value : ''; });
+                        .text(d => { return d.value ? this.applyValueFormat(d.value) : ''; });
                 }
 
                 this.bar.on('mouseover', d => {
@@ -362,7 +375,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                     this.tips.style('display', "inline-block");
                     let elements = d3.selectAll(':hover')[0];
                     let elementData = elements[elements.length-1].__data__;
-                    this.tips.html(`${d.label} , ${elementData.name} ,  ${elementData.value}`);
+                    this.tips.html(`${d.label} , ${elementData.name} ,  ${this.applyValueFormat(elementData.value)}`);
                     if (this.avgLineShow) d3.selectAll(`.${elementData.name}`)[0][0].style.display = '';
                 });
 
@@ -439,6 +452,7 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                 element: '#chart',
                 width: ctrl.panel.width,
                 height: ctrl.panel.height,
+                valueFormat: ctrl.panel.valueFormat,
                 legend: ctrl.panel.legend.show,
                 fontColor: ctrl.panel.fontColor,
                 position: ctrl.panel.legend.position,
