@@ -1,6 +1,6 @@
 'use strict';
 
-System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/time_series', './external/d3.v3.min', './css/groupedBarChart.css!'], function (_export, _context) {
+System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/time_series', './external/d3.v3.min', './external/numeral.min.js', './css/groupedBarChart.css!'], function (_export, _context) {
     "use strict";
 
     var MetricsPanelCtrl, _, kbn, TimeSeries, d3, _createClass, panelDefaults, GroupedBarChartCtrl;
@@ -92,6 +92,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                 fontColor: '#fff',
                 width: 800,
                 height: 400,
+                valueFormat: '',
                 colorSet: [],
                 colorSch: []
             };
@@ -190,6 +191,16 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                         return value;
                     }
                 }, {
+                    key: 'applyValueFormat',
+                    value: function applyValueFormat(value) {
+                        if(this.valueFormat != '') {
+                            return numeral(value).format(this.valueFormat);
+                        }
+                        else {
+                            return value;
+                        }
+                    }
+                }, {
                     key: 'link',
                     value: function link(scope, elem, attrs, ctrl) {
                         var groupedBarChart = function () {
@@ -202,6 +213,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                 this.margin = opts.margin;
                                 this.width = parseInt(opts.width, 10);
                                 this.height = parseInt(opts.height, 10);
+                                this.valueFormat = opts.valueFormat;
                                 this.showLegend = opts.legend;
                                 this.legendType = opts.position;
                                 this.chartType = opts.chartType;
@@ -288,7 +300,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                     var axesScale = 1.1;
                                     this.xAxis = d3.svg.axis().scale(this.axesConfig[0]).tickSize(-this.height).orient('bottom');
 
-                                    this.yAxis = d3.svg.axis().scale(this.axesConfig[1]).orient('left');
+                                    this.yAxis = d3.svg.axis().scale(this.axesConfig[1]).orient('left').tickFormat(d => this.applyValueFormat(d);
 
                                     this.axesConfig[2].domain(this.data.map(function (d) {
                                         return d.label;
@@ -396,7 +408,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                         }).attr('y', function (d) {
                                             return _this4.orientation === 'horizontal' ? _this4.y1(d.name) + _this4.y1.rangeBand() / 2 : _this4.y(d.value) - _this4.height - 8;
                                         }).attr('dy', '.35em').style('fill', '' + this.fontColor).text(function (d) {
-                                            return d.value ? d.value : '';
+                                            return d.value ? this.applyValueFormat(d.value) : '';
                                         });
                                     }
 
@@ -406,7 +418,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                         _this4.tips.style('display', "inline-block");
                                         var elements = d3.selectAll(':hover')[0];
                                         var elementData = elements[elements.length - 1].__data__;
-                                        _this4.tips.html(d.label + ' , ' + elementData.name + ' ,  ' + elementData.value);
+                                        _this4.tips.html(d.label + ' , ' + elementData.name + ' ,  ' + this.applyValueFormat(elementData.value));
                                         if (_this4.avgLineShow) d3.selectAll('.' + elementData.name)[0][0].style.display = '';
                                     });
 
@@ -473,6 +485,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                 element: '#chart',
                                 width: ctrl.panel.width,
                                 height: ctrl.panel.height,
+                                valueFormat: ctrl.panel.valueFormat,
                                 legend: ctrl.panel.legend.show,
                                 fontColor: ctrl.panel.fontColor,
                                 position: ctrl.panel.legend.position,
