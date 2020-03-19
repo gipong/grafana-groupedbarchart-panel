@@ -47,7 +47,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
         }, function (_externalD3V3Min) {
             d3 = _externalD3V3Min;
         }, function (_externalNumeralMin) {
-            numeral = _externalNumeralMin;
+            numeral = _externalNumeralMin.default;
         }, function (_cssGroupedBarChartCss) {}],
         execute: function () {
             _createClass = function () {
