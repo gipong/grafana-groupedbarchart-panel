@@ -38,6 +38,7 @@ const panelDefaults = {
 };
 
 export class GroupedBarChartCtrl extends MetricsPanelCtrl {
+    unitFormats: any;
 
     constructor($scope, $injector, $rootScope) {
         super($scope, $injector);
@@ -55,10 +56,11 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
 
     onInitEditMode() {
         this.addEditorTab('Options', 'public/plugins/grafana-groupedbarchart-panel/partials/editor.html', 2);
+        this.unitFormats = kbn.getUnitFormats();
         this.addEditorTab('Colors', 'public/plugins/grafana-groupedbarchart-panel/partials/colors.html', 3);
     }
 
-    setUnitFormat(subItem) {
+    setUnitFormat(subItem: any) {
         this.panel.format = subItem.value;
         this.render();
     }
