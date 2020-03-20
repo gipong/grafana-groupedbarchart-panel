@@ -257,7 +257,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                     else {
                                         var formatFunc = kbn.valueFormats[ctrl.panel.format];
                                         if(formatFunc) {
-                                            return formatFunc(value, 2, 2);   
+                                            return formatFunc(value, 2);   
                                         }
                                         return value;
                                     }
