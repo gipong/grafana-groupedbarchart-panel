@@ -7,7 +7,7 @@
     "description": "Grouped bar chart panel for grafana",
     "author": {
       "name": "gipong",
-      "url": "https://github.com/jceddy/grafana-groupedbarchart-panel.git"
+      "url": "https://github.com/gipong/grafana-groupedbarchart-panel.git"
     },
     "keywords": ["groupedBarChart", "panel"],
     "logos": {
