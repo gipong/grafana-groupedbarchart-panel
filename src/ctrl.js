@@ -164,6 +164,10 @@ export class GroupedBarChartCtrl extends MetricsPanelCtrl {
                     return numeral(value).format(this.valueFormat);
                 }
                 else {
+                    var formatFunc = kbn.valueFormats[ctrl.panel.format];
+                    if(formatFunc) {
+                        return formatFunc(value);   
+                    }
                     return value;
                 }
             }
