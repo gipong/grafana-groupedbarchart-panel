@@ -257,20 +257,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                     else {
                                         var formatFunc = kbn.valueFormats[ctrl.panel.format];
                                         if(formatFunc) {
-                                            var t, n = value / 2, i = -Math.floor(Math.log(n) / Math.LN10), r = Math.pow(10, -i), o = n / r;
-                                            o < 1.5 ? t = 1 : o < 3 ? (t = 2,
-                                            o > 2.25 && (t = 2.5,
-                                            ++i)) : t = o < 7.5 ? 5 : 10,
-                                            t *= r,
-                                            Math.floor(value) === value && (i = 0);
-                                            var a = {
-                                                decimals: 0,
-                                                scaledDecimals: 0
-                                            };
-                                            a.decimals = Math.max(0, i);
-                                            a.scaledDecimals = a.decimals - Math.floor(Math.log(t) / Math.LN10) + 2;
-
-                                            return formatFunc(value, a.decimals, a.scaledDecimals);   
+                                            return formatFunc(value, 2, 2);   
                                         }
                                         return value;
                                     }
