@@ -5,7 +5,7 @@
   "description": "",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jceddy/grafana-groupedbarchart-panel.git"
+    "url": "https://github.com/gipong/grafana-groupedbarchart-panel.git"
   },
   "author": "gipong",
   "license": "MIT",
