@@ -255,6 +255,10 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                         return numeral(value).format(this.valueFormat);
                                     }
                                     else {
+                                        var formatFunc = kbn.valueFormats[ctrl.panel.format];
+                                        if(formatFunc) {
+                                            return formatFunc(value);   
+                                        }
                                         return value;
                                     }
                                 }
