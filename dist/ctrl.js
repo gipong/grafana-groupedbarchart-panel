@@ -124,6 +124,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                     key: 'onInitEditMode',
                     value: function onInitEditMode() {
                         this.addEditorTab('Options', 'public/plugins/grafana-groupedbarchart-panel/partials/editor.html', 2);
+                        this.unitFormats = kbn.getUnitFormats();
                         this.addEditorTab('Colors', 'public/plugins/grafana-groupedbarchart-panel/partials/colors.html', 3);
                     }
                 }, {
