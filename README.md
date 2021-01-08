@@ -31,5 +31,13 @@ git clone https://github.com/gipong/grafana-groupedbarchart-panel.git
 sudo service grafana-server restart
 ```
 
+using Docker (for grafana:7.0.0)
+
+```
+docker run -d -p 3000:3000 -v "$(pwd)":/var/lib/grafana/plugins grafana/grafana:7.0.0
+```
+
+it only loads on start-up and need to restart this container after you updating this plugin
+
 ## License
 MIT

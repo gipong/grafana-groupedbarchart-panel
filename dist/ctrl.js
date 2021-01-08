@@ -170,9 +170,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                 e.label = i;
                                 res.push(e);
                             });
-                            this.data = res;//.sort(function (a, b) {
-                                //return a.label > b.label ? -1 : b.label > a.label ? 1 : 0;
-                            //});
+                            this.data = res; //.sort((a, b) => {return (a.label>b.label)?-1:((b.label>a.label)?1:0)});
                         } else {
                             this.data = [{ label: "Machine001", "Off": 15, "Down": 50, "Run": 0, "Idle": 40 }, { label: "Machine002", "Off": 15, "Down": 5, "Run": 40, "Idle": 15 }, { label: "Machine003", "Off": 15, "Down": 30, "Run": 40, "Idle": 15 }, { label: "Machine004", "Off": 15, "Down": 30, "Run": 80, "Idle": 15 }];
                         }
@@ -213,9 +211,13 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                 this.barValuesShow = opts.barValuesShow;
                                 this.axesConfig = [];
                                 this.element = elem.find(opts.element)[0];
-                                this.options = d3.keys(this.data[0]).filter(function (key) {
-                                    return key !== 'label';
+                                this.options = [];
+                                this.data.forEach(function (d) {
+                                    _this3.options = _this3.options.concat(d3.keys(d));
                                 });
+                                this.options = _.uniq(this.options.filter(function (key) {
+                                    return key !== 'label';
+                                }));
                                 this.avgList = {};
                                 this.options.forEach(function (d) {
                                     _this3.avgList[d] = 0;
@@ -225,7 +227,9 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                 });
                                 this.data.forEach(function (d) {
                                     var stackVal = 0;
-                                    d.valores = _this3.options.map(function (name, i, o) {
+                                    d.valores = _this3.options.filter(function (k) {
+                                        return k in d;
+                                    }).map(function (name, i, o) {
                                         if (i !== 0) stackVal = stackVal + +d[o[i - 1]];
                                         _this3.avgList[name] = _this3.avgList[name] + d[name];
                                         return { name: name, value: +d[name], stackVal: stackVal };
@@ -390,7 +394,7 @@ System.register(['app/plugins/sdk', 'lodash', 'app/core/utils/kbn', 'app/core/ti
                                             break;
                                     }
 
-                                    if(this.barValuesShow) {
+                                    if (this.barValuesShow) {
                                         this.chartType === 'bar chart' && this.barC.append('text').attr('x', function (d) {
                                             return _this4.orientation === 'horizontal' ? _this4.x(d.value) + 5 : _this4.x1(d.name) + _this4.x1.rangeBand() / 4 + _this4.margin.left;
                                         }).attr('y', function (d) {
