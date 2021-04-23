@@ -39,5 +39,14 @@ docker run -d -p 3000:3000 -v "$(pwd)":/var/lib/grafana/plugins grafana/grafana:
 
 it only loads on start-up and need to restart this container after you updating this plugin
 
+for grafana v6
+
+```
+grafana-cli --pluginUrl https://github.com/gipong/grafana-groupedbarchart-panel/archive/master.zip plugins install groupedbarchart
+```
+https://github.com/gipong/grafana-groupedbarchart-panel/issues/2#issuecomment-547160012
+
+
+
 ## License
 MIT
